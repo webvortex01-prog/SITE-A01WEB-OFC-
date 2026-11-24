@@ -151,9 +151,9 @@ export default function BeforeAfterSlider() {
     <section
       ref={sectionRef}
       id="comparativo"
-      className="py-20 lg:min-h-[155vh] relative overflow-x-clip bg-[#06080F] border-b border-white/10"
+      className="py-14 lg:min-h-[145vh] relative overflow-x-clip bg-[#06080F] border-b border-white/10"
     >
-      <div className="lg:sticky lg:top-18 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 scrolly-perspective">
+      <div className="lg:sticky lg:top-15 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 scrolly-perspective">
         <motion.div
           style={{
             scale: stageScale,
@@ -161,7 +161,7 @@ export default function BeforeAfterSlider() {
             transformStyle: 'preserve-3d',
           }}
         >
-          <div className="text-center max-w-3xl mx-auto space-y-3 mb-7">
+          <div className="text-center max-w-3xl mx-auto space-y-2 mb-4">
             <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-mono text-cyan-400">
               <Sparkles className="w-3.5 h-3.5" />
               <span>03. SCANNER RAIO-X NO SCROLL</span>
@@ -171,7 +171,7 @@ export default function BeforeAfterSlider() {
               </span>
             </div>
 
-            <h2 className="text-3xl sm:text-5xl font-extrabold font-heading text-white tracking-tight">
+            <h2 className="text-2xl sm:text-4xl font-extrabold font-heading text-white tracking-tight">
               Site Comum Amador vs.{' '}
               <span className="text-gradient-animated">Máquina de Vendas 01 WEB</span>
             </h2>
@@ -273,7 +273,7 @@ export default function BeforeAfterSlider() {
                 }
               }}
               onPointerCancel={() => setIsDragging(false)}
-              className="relative h-[450px] sm:h-[470px] rounded-3xl overflow-hidden border-2 border-cyan-400/40 select-none cursor-ew-resize shadow-[0_25px_80px_-15px_rgba(34,211,238,0.28)] touch-pan-y"
+              className="relative h-[380px] sm:h-[400px] rounded-3xl overflow-hidden border-2 border-cyan-400/40 select-none cursor-ew-resize shadow-[0_25px_80px_-15px_rgba(34,211,238,0.28)] touch-pan-y"
             >
               {/* ===============================================================
                   LAYER 1 (BASE LAYER - z-10): 100% PADRÃO 01 WEB

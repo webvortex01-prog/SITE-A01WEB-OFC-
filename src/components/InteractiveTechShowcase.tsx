@@ -279,11 +279,11 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
         {/* =====================================================================
             PART 1: PINNED SCROLL-STEPPED 4 LAYERS (SCROLL OR CLICK TO ADVANCE)
            ===================================================================== */}
-        <div ref={layersTrackRef} className="relative lg:min-h-[250vh] py-16 lg:py-0">
-          <div className="lg:sticky lg:top-18 lg:py-10 flex flex-col justify-center space-y-8">
+        <div ref={layersTrackRef} className="relative lg:min-h-[240vh] py-12 lg:py-0">
+          <div className="lg:sticky lg:top-15 lg:py-3 flex flex-col justify-center space-y-4">
             {/* Section Header + Live Scroll Step Indicator */}
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-              <div className="space-y-2 max-w-2xl">
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-3">
+              <div className="space-y-1 max-w-2xl">
                 <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-cyan-400">
                   <Layers className="w-3.5 h-3.5" />
                   <span>02. ENGENHARIA INTERATIVA 01 WEB</span>
@@ -293,7 +293,7 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
                   </span>
                 </div>
 
-                <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold font-heading text-white tracking-tight">
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-heading text-white tracking-tight">
                   Anatomia de uma Estrutura Feita Para{' '}
                   <span className="text-gradient-animated">Converter Visitantes em Clientes.</span>
                 </h2>
@@ -412,9 +412,9 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
                     animate={{ opacity: 1, y: 0, scale: 1, rotateX: 0 }}
                     exit={{ opacity: 0, y: -20, scale: 0.95, rotateX: -8 }}
                     transition={{ duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
-                    className={`rounded-3xl p-6 sm:p-8 bg-[#0B0F1A] border ${currentLayer.border} scrolly-glow-border space-y-6`}
+                    className={`rounded-3xl p-5 sm:p-6 bg-[#0B0F1A] border ${currentLayer.border} scrolly-glow-border space-y-3.5`}
                   >
-                    <div className="flex items-center justify-between gap-3 pb-4 border-b border-white/10">
+                    <div className="flex items-center justify-between gap-3 pb-2.5 border-b border-white/10">
                       <span className="px-3 py-1 rounded-full bg-cyan-400/15 border border-cyan-400/30 text-cyan-300 text-xs font-mono font-bold">
                         {currentLayer.badge}
                       </span>
@@ -423,21 +423,21 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
                       </span>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       <div className="flex items-center gap-3">
                         <div
-                          className={`w-10 h-10 rounded-xl bg-gradient-to-br ${currentLayer.accent} text-slate-950 flex items-center justify-center shrink-0`}
+                          className={`w-9 h-9 rounded-xl bg-gradient-to-br ${currentLayer.accent} text-slate-950 flex items-center justify-center shrink-0`}
                         >
-                          <CurrentLayerIcon className="w-5 h-5 stroke-[2.2]" />
+                          <CurrentLayerIcon className="w-4 h-4 stroke-[2.2]" />
                         </div>
-                        <h3 className="text-xl sm:text-2xl font-extrabold font-heading text-white">
+                        <h3 className="text-lg sm:text-xl font-extrabold font-heading text-white">
                           {currentLayer.title}
                         </h3>
                       </div>
-                      <p className="text-xs sm:text-sm text-cyan-300 font-medium">
+                      <p className="text-xs text-cyan-300 font-medium">
                         {currentLayer.subtitle}
                       </p>
-                      <p className="text-xs sm:text-sm text-slate-300 leading-relaxed pt-1">
+                      <p className="text-xs text-slate-300 leading-relaxed">
                         {currentLayer.description}
                       </p>
                     </div>
@@ -449,13 +449,13 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
                       badgeText={currentLayer.code}
                       metricText={currentLayer.metricValue}
                       accentColor={currentLayer.accent}
-                      aspectClass="h-40 sm:h-44"
+                      aspectClass="h-28 sm:h-32"
                       overlayTitle={currentLayer.title}
                       overlaySubtitle={currentLayer.subtitle}
                     />
 
                     {/* Interactive Animated Checklist Nodes */}
-                    <div className="space-y-2.5 p-4 rounded-2xl bg-[#06080F] border border-white/10">
+                    <div className="space-y-1.5 p-3 rounded-2xl bg-[#06080F] border border-white/10">
                       {currentLayer.previewNodes.map((node, i) => (
                         <motion.div
                           key={node}
@@ -516,16 +516,16 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
            ===================================================================== */}
         <div
           ref={timelineTrackRef}
-          className="relative lg:min-h-[300vh] py-16 lg:py-0 border-t border-white/10"
+          className="relative lg:min-h-[280vh] py-12 lg:py-0 border-t border-white/10"
         >
-          <div className="lg:sticky lg:top-16 lg:py-8 flex flex-col justify-center space-y-6">
+          <div className="lg:sticky lg:top-15 lg:py-3 flex flex-col justify-center space-y-3.5">
             {/* Header + Active Vertical Step Readout */}
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-              <div className="space-y-1.5 max-w-2xl">
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-3">
+              <div className="space-y-1 max-w-2xl">
                 <div className="text-xs font-mono uppercase tracking-widest text-cyan-400 font-semibold">
                   JORNADA GUIADA PELO SCROLL · DO ZERO AO AR EM 3 A 7 DIAS
                 </div>
-                <h3 className="text-2xl sm:text-4xl font-extrabold font-heading text-white tracking-tight">
+                <h3 className="text-2xl sm:text-3xl font-extrabold font-heading text-white tracking-tight">
                   Como Tiramos Seu Projeto do Papel{' '}
                   <span className="text-gradient-animated">Passo a Passo</span>
                 </h3>
@@ -645,7 +645,7 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
                           : 0.38,
                       }}
                       transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                      className={`relative p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer ${
+                      className={`relative p-3 sm:p-3.5 rounded-2xl border transition-all cursor-pointer ${
                         isAllCompleted
                           ? 'bg-[#09151B]/95 border-emerald-400/60 shadow-lg shadow-emerald-950/30'
                           : isCurrent
@@ -657,7 +657,7 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
                     >
                       {/* Vertical Node Circle on the Left Spine */}
                       <div
-                        className={`absolute -left-12 sm:-left-13 top-1/2 -translate-y-1/2 w-9 h-9 rounded-xl flex items-center justify-center font-mono font-extrabold text-xs transition-all duration-300 shadow-lg ${
+                        className={`absolute -left-12 sm:-left-13 top-1/2 -translate-y-1/2 w-8 h-8 rounded-xl flex items-center justify-center font-mono font-extrabold text-xs transition-all duration-300 shadow-lg ${
                           isCompleted
                             ? 'bg-emerald-400 text-slate-950 shadow-emerald-400/40 scale-105'
                             : isCurrent
@@ -668,8 +668,8 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
                         {isCompleted ? <Check className="w-4 h-4 stroke-[3]" /> : st.number}
                       </div>
 
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div className="space-y-1">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                        <div className="space-y-0.5">
                           <div className="flex flex-wrap items-center gap-2">
                             <span
                               className={`text-[10px] font-mono font-bold ${
@@ -695,10 +695,10 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
                             </span>
                           </div>
 
-                          <h4 className="text-base sm:text-lg font-bold font-heading text-white">
+                          <h4 className="text-sm sm:text-base font-bold font-heading text-white">
                             {st.title}
                           </h4>
-                          <p className="text-xs text-slate-300 leading-relaxed">
+                          <p className="text-xs text-slate-300 leading-snug">
                             {st.description}
                           </p>
                         </div>
@@ -718,10 +718,10 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -16, scale: 0.96 }}
                       transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-                      className={`h-full rounded-3xl p-6 sm:p-8 bg-[#0B0F1A] border ${currentStepObj.borderActive} scrolly-glow-border flex flex-col justify-between space-y-6`}
+                      className={`h-full rounded-3xl p-5 sm:p-6 bg-[#0B0F1A] border ${currentStepObj.borderActive} scrolly-glow-border flex flex-col justify-between space-y-3.5`}
                     >
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between pb-4 border-b border-white/10">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between pb-2.5 border-b border-white/10">
                           <span className="px-3 py-1 rounded-full bg-cyan-400/15 border border-cyan-400/30 text-cyan-300 text-xs font-mono font-bold">
                             PASSO 0{focusedStepIdx + 1} DE 04
                           </span>
@@ -730,23 +730,23 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-3.5">
+                        <div className="flex items-center gap-3">
                           <div
-                            className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${currentStepObj.accentBg} text-slate-950 flex items-center justify-center shrink-0 shadow-lg`}
+                            className={`w-10 h-10 rounded-xl bg-gradient-to-br ${currentStepObj.accentBg} text-slate-950 flex items-center justify-center shrink-0 shadow-lg`}
                           >
-                            <CurrentStepIcon className="w-6 h-6 stroke-[2.2]" />
+                            <CurrentStepIcon className="w-5 h-5 stroke-[2.2]" />
                           </div>
                           <div>
                             <div className={`text-xs font-mono font-bold ${currentStepObj.accentText}`}>
                               {currentStepObj.tag}
                             </div>
-                            <h4 className="text-xl font-extrabold font-heading text-white">
+                            <h4 className="text-lg sm:text-xl font-extrabold font-heading text-white">
                               {currentStepObj.title}
                             </h4>
                           </div>
                         </div>
 
-                        <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        <p className="text-xs text-slate-300 leading-relaxed">
                           {currentStepObj.subtitle}. {currentStepObj.description}
                         </p>
 
@@ -756,23 +756,23 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
                           badgeText={currentStepObj.tag}
                           metricText={`PASSO ${currentStepObj.number}`}
                           accentColor={currentStepObj.accentBg}
-                          aspectClass="h-40 sm:h-44"
+                          aspectClass="h-28 sm:h-32"
                           overlayTitle={currentStepObj.title}
                           overlaySubtitle={currentStepObj.deliverable}
                         />
 
-                        <div className="p-4 rounded-2xl bg-[#06080F] border border-white/10 space-y-2">
+                        <div className="p-3 rounded-2xl bg-[#06080F] border border-white/10 space-y-1">
                           <div className="text-[10px] font-mono uppercase text-slate-400">
                             ENTREGA GARANTIDA NESTA ETAPA:
                           </div>
-                          <div className="flex items-start gap-2 text-xs sm:text-sm font-bold text-emerald-400">
+                          <div className="flex items-start gap-2 text-xs font-bold text-emerald-400">
                             <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
                             <span>{currentStepObj.deliverable}</span>
                           </div>
                         </div>
                       </div>
 
-                      <div className="space-y-3 pt-4 border-t border-white/10">
+                      <div className="space-y-2 pt-2.5 border-t border-white/10">
                         <div className="flex justify-between text-[11px] font-mono text-slate-400">
                           <span>AVANÇO DA JORNADA</span>
                           <span className="text-cyan-400 font-bold">

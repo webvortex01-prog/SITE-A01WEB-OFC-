@@ -482,10 +482,10 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
             Beat 2: POW! Project #02 (GRV Motors) full-screen spotlight
             Beat 3: POW! Project #03 (Studio Six) full-screen spotlight
            ===================================================================== */}
-        <div ref={theaterTrackRef} className="relative lg:min-h-[390vh] py-16 lg:py-0">
-          <div className="lg:sticky lg:top-16 lg:py-8 flex flex-col justify-center space-y-6">
+        <div ref={theaterTrackRef} className="relative lg:min-h-[390vh] py-12 lg:py-0">
+          <div className="lg:sticky lg:top-15 lg:py-3 flex flex-col justify-center space-y-3">
             {/* Top Theater HUD Bar (Works on Scroll AND Click) */}
-            <div className="sticky top-17 z-30 lg:static flex flex-wrap items-center justify-between gap-3 p-3 sm:px-5 sm:py-3.5 rounded-2xl bg-[#0B0F1A]/95 backdrop-blur-xl border border-cyan-400/30 shadow-2xl">
+            <div className="sticky top-16 z-30 lg:static flex flex-wrap items-center justify-between gap-2.5 p-2.5 sm:px-4 sm:py-2.5 rounded-2xl bg-[#0B0F1A]/95 backdrop-blur-xl border border-cyan-400/30 shadow-2xl">
               <div className="flex items-center gap-2.5 text-xs font-mono">
                 <MousePointerClick className="w-4 h-4 text-cyan-400 shrink-0" />
                 <span className="text-slate-300 font-bold">
@@ -542,7 +542,7 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
             </div>
 
             {/* Dynamic 3D Stage Content */}
-            <div className="scrolly-perspective min-h-[500px] flex items-center">
+            <div className="scrolly-perspective min-h-[410px] flex items-center">
               <AnimatePresence mode="wait">
                 {spotlightStage === 0 ? (
                   /* =========================================================
@@ -554,24 +554,24 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
                     animate={{ opacity: 1, y: 0, scale: 1, rotateX: 0 }}
                     exit={{ opacity: 0, y: -28, scale: 0.94, rotateX: -8 }}
                     transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                    className="w-full rounded-3xl p-6 sm:p-10 lg:p-12 bg-gradient-to-br from-[#0B1224] via-[#070B14] to-[#09171B] border-2 border-cyan-400/40 shadow-[0_25px_90px_-20px_rgba(34,211,238,0.28)] relative overflow-hidden"
+                    className="w-full rounded-3xl p-5 sm:p-7 lg:p-8 bg-gradient-to-br from-[#0B1224] via-[#070B14] to-[#09171B] border-2 border-cyan-400/40 shadow-[0_25px_90px_-20px_rgba(34,211,238,0.28)] relative overflow-hidden"
                   >
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center relative z-10">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center relative z-10">
                       {/* Left Column: Impactful Manifesto Copy */}
-                      <div className="lg:col-span-7 space-y-5">
-                        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-400/15 border border-cyan-400/40 text-cyan-300 text-xs font-mono font-bold">
+                      <div className="lg:col-span-7 space-y-3.5">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-400/15 border border-cyan-400/40 text-cyan-300 text-xs font-mono font-bold">
                           <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
                           <span>01. ENGENHARIA VISUAL & PROJETOS DE ELITE</span>
                         </div>
 
-                        <h2 className="text-3xl sm:text-5xl font-extrabold font-heading text-white tracking-tight leading-[1.06]">
+                        <h2 className="text-2xl sm:text-4xl font-extrabold font-heading text-white tracking-tight leading-[1.08]">
                           Não Criamos &ldquo;Sites Comuns&rdquo;.{' '}
                           <span className="text-gradient-animated">
                             Entregamos Máquinas Digitais Que Dominam o Seu Nicho.
                           </span>
                         </h2>
 
-                        <p className="text-slate-200 text-sm sm:text-base leading-relaxed">
+                        <p className="text-slate-200 text-xs sm:text-sm leading-relaxed">
                           Cada projeto que sai da <strong className="text-white">01 WEB</strong> é
                           construído em código puro de alta velocidade, com animações imersivas que
                           prendem o cliente nos primeiros 3 segundos e direcionam o pedido mastigado
@@ -579,7 +579,7 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
                         </p>
 
                         {/* 4 Pillars of What We Deliver */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-0.5">
                           {[
                             {
                               title: 'Visual Padrão Awwwards / Apple',
@@ -600,24 +600,24 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
                           ].map((pillar) => (
                             <div
                               key={pillar.title}
-                              className="p-3.5 rounded-2xl bg-[#060913]/90 border border-white/10 space-y-1"
+                              className="p-2.5 sm:p-3 rounded-xl bg-[#060913]/90 border border-white/10 space-y-0.5"
                             >
                               <div className="text-xs font-extrabold text-cyan-300 flex items-center gap-1.5">
-                                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                                 <span>{pillar.title}</span>
                               </div>
-                              <p className="text-[11px] text-slate-400 leading-relaxed">
+                              <p className="text-[11px] text-slate-400 leading-snug">
                                 {pillar.desc}
                               </p>
                             </div>
                           ))}
                         </div>
 
-                        <div className="pt-2 flex flex-wrap items-center gap-3">
+                        <div className="pt-1 flex flex-wrap items-center gap-3">
                           <button
                             type="button"
                             onClick={() => jumpToTheaterStage(1)}
-                            className="btn-cyber-primary inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 font-extrabold text-xs sm:text-sm cursor-pointer shadow-lg"
+                            className="btn-cyber-primary inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 font-extrabold text-xs sm:text-sm cursor-pointer shadow-lg"
                           >
                             <span>Role ou Clique: Ver 1º Projeto Saltar na Tela</span>
                             <ArrowRight className="w-4 h-4 text-slate-950" />
@@ -629,15 +629,15 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
                       </div>
 
                       {/* Right Column: 3D Visual Preview Collage of the 3 Flagship Projects */}
-                      <div className="lg:col-span-5 space-y-3">
-                        <div className="text-xs font-mono text-slate-400 uppercase tracking-wider mb-1">
+                      <div className="lg:col-span-5 space-y-2.5">
+                        <div className="text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-0.5">
                           PRÓXIMOS 3 DESTAQUES NO SEU SCROLL:
                         </div>
                         {topThreeProjects.map((proj, i) => (
                           <div
                             key={proj.id}
                             onClick={() => jumpToTheaterStage(i + 1)}
-                            className="group relative h-28 rounded-2xl overflow-hidden border border-white/15 hover:border-cyan-400 transition-all cursor-pointer flex items-end p-4"
+                            className="group relative h-22 sm:h-24 rounded-2xl overflow-hidden border border-white/15 hover:border-cyan-400 transition-all cursor-pointer flex items-end p-3.5"
                           >
                             <img
                               src={proj.imageUrl}
@@ -675,11 +675,11 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
                       animate={{ opacity: 1, scale: 1, y: 0, rotateX: 0 }}
                       exit={{ opacity: 0, scale: 0.92, y: -30, rotateX: -10 }}
                       transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
-                      className="w-full rounded-3xl p-6 sm:p-10 bg-gradient-to-br from-[#0C1428] via-[#080C18] to-[#0A141E] border-2 border-cyan-400 shadow-[0_30px_100px_-15px_rgba(34,211,238,0.38)]"
+                      className="w-full rounded-3xl p-5 sm:p-7 bg-gradient-to-br from-[#0C1428] via-[#080C18] to-[#0A141E] border-2 border-cyan-400 shadow-[0_30px_100px_-15px_rgba(34,211,238,0.38)]"
                     >
-                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
                         {/* Left Column (col-span-5): Full Analysis & Actions */}
-                        <div className="lg:col-span-5 space-y-5">
+                        <div className="lg:col-span-5 space-y-3.5">
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="px-3 py-1 rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950 font-mono font-extrabold text-xs">
                               PROJETO #0{spotlightStage} DE 03
@@ -692,29 +692,29 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
                             </span>
                           </div>
 
-                          <div className="space-y-2">
-                            <h3 className="text-2xl sm:text-4xl font-extrabold font-heading text-white leading-tight">
+                          <div className="space-y-1.5">
+                            <h3 className="text-xl sm:text-3xl font-extrabold font-heading text-white leading-tight">
                               {activeSpotlightProject.title}
                             </h3>
-                            <p className="text-xs sm:text-sm text-cyan-300 font-semibold">
+                            <p className="text-xs text-cyan-300 font-semibold">
                               {activeSpotlightProject.tagline}
                             </p>
-                            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                            <p className="text-xs text-slate-300 leading-relaxed">
                               {activeSpotlightProject.description}
                             </p>
                           </div>
 
                           {/* Checklist of Project Engineering */}
-                          <div className="p-4 rounded-2xl bg-[#060912] border border-white/10 space-y-2.5">
+                          <div className="p-3 rounded-2xl bg-[#060912] border border-white/10 space-y-1.5">
                             <div className="text-[10px] font-mono uppercase text-cyan-400 font-bold">
                               DIFERENCIAIS ENTREGUES NESTE PROJETO:
                             </div>
                             {activeSpotlightProject.features.map((feat, idx) => (
                               <div
                                 key={idx}
-                                className="flex items-start gap-2.5 text-xs text-slate-200"
+                                className="flex items-start gap-2 text-xs text-slate-200"
                               >
-                                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
                                 <span>{feat}</span>
                               </div>
                             ))}
@@ -806,7 +806,7 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
                             </div>
 
                             {/* High-Res Visual Image with Floating UI Elements */}
-                            <div className="relative h-[300px] sm:h-[370px] overflow-hidden">
+                            <div className="relative h-[270px] sm:h-[310px] overflow-hidden">
                               <img
                                 src={activeSpotlightProject.imageUrl}
                                 alt={activeSpotlightProject.title}
