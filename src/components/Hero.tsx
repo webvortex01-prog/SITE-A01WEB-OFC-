@@ -46,8 +46,8 @@ function HeroMobile({ onOpenFunnel }: HeroProps) {
     mass: 0.4,
   });
 
-  const beforeBgScale = useTransform(smoothScroll, [0, 0.6, 1], [1.0, 1.06, 1.1]);
-  const afterBgScale = useTransform(smoothScroll, [0, 0.4, 1], [1.08, 1.02, 1.0]);
+  const beforeBgScale = useTransform(smoothScroll, [0, 0.6, 1], [1.0, 1.05, 1.09]);
+  const afterBgScale = useTransform(smoothScroll, [0, 0.4, 1], [1.07, 1.02, 1.0]);
 
   useMotionValueEvent(smoothScroll, 'change', (v) => {
     if ((v <= 0.02 || v >= 0.98) && isManualControl && !isDragging) {
@@ -74,13 +74,127 @@ function HeroMobile({ onOpenFunnel }: HeroProps) {
     <section
       ref={heroSectionRef}
       id="inicio"
-      className="relative h-[220vh] w-full bg-[#04060C] select-none border-b border-white/10"
+      className="relative h-[230vh] w-full bg-[#04060C] select-none border-b border-white/10"
     >
-      <div className="sticky top-0 left-0 w-full h-[100svh] flex flex-col justify-between pt-[72px] pb-3 px-3.5 overflow-hidden">
-        <div className="max-w-xl w-full mx-auto flex-1 flex flex-col justify-between gap-2 min-h-0">
-          {/* 1. TOP ROW (~32px): Compact Status Badge + 3 Mini Quick-Jump Pills */}
-          <div className="flex items-center justify-between gap-1.5 shrink-0">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#080C18]/95 border border-white/15 shadow min-w-0">
+      {/* =====================================================================
+          FULL-SCREEN (100vw x 100svh) STICKY MOBILE CINEMA STAGE
+         ===================================================================== */}
+      <div
+        ref={stageRef}
+        onPointerDown={(e) => {
+          if ((e.target as HTMLElement).closest('button, a, input')) return;
+          e.currentTarget.setPointerCapture(e.pointerId);
+          setIsDragging(true);
+          updateFromClientX(e.clientX);
+        }}
+        onPointerMove={(e) => {
+          if (isDragging) {
+            updateFromClientX(e.clientX);
+          }
+        }}
+        onPointerUp={(e) => {
+          if (!isDragging) return;
+          setIsDragging(false);
+          try {
+            e.currentTarget.releasePointerCapture(e.pointerId);
+          } catch {
+            // ignore
+          }
+        }}
+        onPointerCancel={() => setIsDragging(false)}
+        className="sticky top-0 left-0 w-full h-[100svh] overflow-hidden cursor-ew-resize touch-pan-y"
+      >
+        {/* ===================================================================
+            BACKGROUND LAYER 1 (z-10): FULL-SCREEN 9:16 VERTICAL "ANTES"
+           =================================================================== */}
+        <div className="absolute inset-0 z-10 overflow-hidden bg-[#070409]">
+          <motion.img
+            src="/images/hero-antes-mobile.jpg"
+            alt="Antes: Site Feio, Atendimento Lento e Sem Organização"
+            style={{ scale: beforeBgScale }}
+            className="w-full h-full object-cover object-top pointer-events-none will-change-transform"
+          />
+
+          {/* Smart vertical cinema scrim: top edge subtle shade, middle-top window crystal-clear, bottom smooth dark fade */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background:
+                'linear-gradient(180deg, rgba(4,6,12,0.58) 0%, rgba(4,6,12,0.05) 18%, rgba(4,6,12,0.08) 44%, rgba(5,8,17,0.78) 65%, rgba(4,6,12,0.95) 100%)',
+            }}
+          />
+        </div>
+
+        {/* ===================================================================
+            BACKGROUND LAYER 2 (z-20): FULL-SCREEN STUDIO-DISSOLVE "DEPOIS A01 WEB"
+           =================================================================== */}
+        <div
+          className="absolute inset-0 z-20 overflow-hidden bg-[#040B14]"
+          style={{
+            clipPath: `inset(0 ${100 - revealPercent}% 0 0)`,
+            WebkitClipPath: `inset(0 ${100 - revealPercent}% 0 0)`,
+          }}
+        >
+          {/* Sub-layer 2A: Full-Screen Atmospheric Ambient Extension */}
+          <img
+            src="/images/hero-depois-a01web.jpg"
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full object-cover object-center blur-2xl scale-125 opacity-40 pointer-events-none"
+          />
+
+          {/* Sub-layer 2B: Razor-Sharp Edge-to-Edge Upper Photo with Seamless Bottom Dissolve */}
+          <div
+            className="absolute top-0 inset-x-0 h-[56svh] overflow-hidden pointer-events-none"
+            style={{
+              maskImage:
+                'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 58%, rgba(0,0,0,0) 100%)',
+              WebkitMaskImage:
+                'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 58%, rgba(0,0,0,0) 100%)',
+            }}
+          >
+            <motion.img
+              src="/images/hero-depois-a01web.jpg"
+              alt="Depois: A01 WEB Empresa Organizada e Automations"
+              style={{ scale: afterBgScale }}
+              className="w-full h-full object-cover object-[68%_18%] will-change-transform"
+            />
+          </div>
+
+          {/* Sub-layer 2C: Matching Cinematic Vertical Scrim */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background:
+                'linear-gradient(180deg, rgba(4,9,18,0.55) 0%, rgba(4,9,18,0.04) 18%, rgba(4,9,18,0.08) 44%, rgba(4,10,20,0.78) 65%, rgba(4,6,12,0.95) 100%)',
+            }}
+          />
+        </div>
+
+        {/* ===================================================================
+            FULL-SCREEN VERTICAL LASER SHOCKWAVE BEAM (z-30)
+           =================================================================== */}
+        <div
+          className="absolute inset-y-0 -ml-6 w-12 pointer-events-none z-30"
+          style={{ left: `${revealPercent}%` }}
+        >
+          <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-8 bg-gradient-to-r from-transparent via-cyan-400/35 to-transparent blur-md" />
+          <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[3px] bg-gradient-to-b from-cyan-300 via-emerald-400 to-cyan-300 shadow-[0_0_24px_4px_rgba(34,211,238,0.95)]" />
+          <div className="absolute top-[30%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-emerald-400 text-slate-950 flex items-center justify-center shadow-[0_0_24px_rgba(34,211,238,1)] border-2 border-white">
+            <ArrowLeftRight className="w-4 h-4 stroke-[2.5]" />
+          </div>
+        </div>
+
+        {/* ===================================================================
+            FOREGROUND FLOATING GLASS OVERLAY (z-40)
+            - Top Bar: Status Pill + Quick-Jump Pills
+            - Middle: 100% OPEN & CLEAR so the full-bleed photo & laser breathe!
+            - Bottom: Translucent Floating Glass Card + Scrubber Bar
+           =================================================================== */}
+        <div className="relative z-40 w-full h-full flex flex-col justify-between pt-[72px] pb-3 px-3.5 pointer-events-none">
+          {/* TOP ROW */}
+          <div className="flex items-center justify-between gap-1.5 pointer-events-auto max-w-xl w-full mx-auto">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#060913]/80 backdrop-blur-xl border border-white/15 shadow-lg min-w-0">
               <span
                 className={`w-2 h-2 rounded-full shrink-0 ${
                   isAfterPhase
@@ -93,7 +207,7 @@ function HeroMobile({ onOpenFunnel }: HeroProps) {
               </span>
             </div>
 
-            <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-[#080C18]/95 border border-white/15 shrink-0">
+            <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-[#060913]/85 backdrop-blur-xl border border-white/20 shadow-lg shrink-0">
               <button
                 type="button"
                 onClick={() => {
@@ -102,9 +216,7 @@ function HeroMobile({ onOpenFunnel }: HeroProps) {
                   setRevealPercent(0);
                 }}
                 className={`px-2 py-1 rounded-lg text-[10px] font-mono font-extrabold transition-all cursor-pointer ${
-                  revealPercent < 25
-                    ? 'bg-rose-500 text-white shadow'
-                    : 'text-slate-300'
+                  revealPercent < 25 ? 'bg-rose-500 text-white shadow' : 'text-slate-300'
                 }`}
               >
                 Antes
@@ -142,212 +254,143 @@ function HeroMobile({ onOpenFunnel }: HeroProps) {
             </div>
           </div>
 
-          {/* 2. INTERACTIVE BEFORE/AFTER PHOTO FRAME */}
-          <div
-            ref={stageRef}
-            onPointerDown={(e) => {
-              e.currentTarget.setPointerCapture(e.pointerId);
-              setIsDragging(true);
-              updateFromClientX(e.clientX);
-            }}
-            onPointerMove={(e) => {
-              if (isDragging) {
-                updateFromClientX(e.clientX);
-              }
-            }}
-            onPointerUp={(e) => {
-              if (!isDragging) return;
-              setIsDragging(false);
-              try {
-                e.currentTarget.releasePointerCapture(e.pointerId);
-              } catch {
-                // ignore
-              }
-            }}
-            onPointerCancel={() => setIsDragging(false)}
-            className="relative h-[27svh] min-h-[168px] max-h-[245px] w-full rounded-2xl overflow-hidden border border-cyan-400/35 touch-pan-y select-none shadow-2xl bg-[#080508] shrink-0"
-          >
-            {/* Layer 1: ANTES */}
-            <motion.img
-              src="/images/hero-antes-caos.jpg"
-              alt="Antes: Site Feio, Atendimento Lento e Sem Organização"
-              style={{ scale: beforeBgScale }}
-              className="w-full h-full object-cover object-center pointer-events-none will-change-transform"
-            />
+          {/* MIDDLE: Open breathing space over the full-screen background scene */}
+          <div className="flex-1" />
 
-            {/* Layer 2: DEPOIS (Clipped) */}
+          {/* BOTTOM STACK: Floating Glass Copy & CTA Card + Scrubber Bar */}
+          <div className="pointer-events-auto max-w-xl w-full mx-auto space-y-2">
             <div
-              className="absolute inset-0 z-10 overflow-hidden"
-              style={{
-                clipPath: `inset(0 ${100 - revealPercent}% 0 0)`,
-                WebkitClipPath: `inset(0 ${100 - revealPercent}% 0 0)`,
-              }}
+              className={`p-3.5 rounded-2xl bg-[#050811]/70 backdrop-blur-md border shadow-[0_20px_60px_rgba(0,0,0,0.8)] space-y-2.5 ${
+                isAfterPhase ? 'border-cyan-400/45' : 'border-rose-500/35'
+              }`}
             >
-              <motion.img
-                src="/images/hero-depois-a01web.jpg"
-                alt="Depois: A01 WEB Empresa Organizada e Automations"
-                style={{ scale: afterBgScale }}
-                className="w-full h-full object-cover object-center pointer-events-none will-change-transform"
+              <AnimatePresence mode="wait">
+                {!isAfterPhase ? (
+                  <motion.div
+                    key="mob-before"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-1.5"
+                  >
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 text-[10px] font-mono font-extrabold">
+                      <AlertTriangle className="w-3 h-3 text-rose-400 shrink-0" />
+                      <span>ROLE A TELA PARA TRANSFORMAR ↓</span>
+                    </div>
+
+                    <h1 className="text-[1.22rem] sm:text-2xl font-extrabold font-heading tracking-tight text-white leading-[1.12] drop-shadow">
+                      Site Feio e Atendimento Lento Estão{' '}
+                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-amber-300 to-rose-500">
+                        Entregando Seus Clientes.
+                      </span>
+                    </h1>
+
+                    <p className="text-[11.5px] sm:text-xs text-slate-200 leading-snug line-clamp-2">
+                      Página amadora ou demora no Zap faz você perder vendas em segundos. Role a
+                      tela e veja o padrão <strong className="text-white">01 WEB</strong>.
+                    </p>
+
+                    <div className="px-2.5 py-1.5 rounded-xl bg-rose-950/75 border border-rose-500/40 text-[11px] font-bold text-rose-100 truncate">
+                      ❌ 84% fecham o site antes de carregar
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="mob-after"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-1.5"
+                  >
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-400/20 border border-emerald-400/50 text-emerald-300 text-[10px] font-mono font-extrabold">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                      <span>PADRÃO A01 WEB ATIVO ({revealPercent}%)</span>
+                    </div>
+
+                    <h1 className="text-[1.22rem] sm:text-2xl font-extrabold font-heading tracking-tight text-white leading-[1.12] drop-shadow">
+                      Empresa Organizada,{' '}
+                      <span className="text-gradient-animated">
+                        Site de Elite & Robô 24/7 no Zap.
+                      </span>
+                    </h1>
+
+                    <p className="text-[11.5px] sm:text-xs text-slate-100 leading-snug line-clamp-2">
+                      Estrutura pronta em <strong className="text-emerald-300">3 a 7 dias</strong>:
+                      visual de autoridade, triagem automática e zero mensalidade.
+                    </p>
+
+                    <div className="px-2.5 py-1.5 rounded-xl bg-emerald-950/70 border border-emerald-400/45 text-[11px] font-bold text-emerald-100 flex items-center gap-1.5 truncate">
+                      <Bot className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span className="truncate">
+                        Robô 24/7: &ldquo;Cliente qualificado pronto p/ fechar!&rdquo;
+                      </span>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="space-y-1.5 pt-0.5">
+                {onOpenFunnel && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sound.playClick(950);
+                      onOpenFunnel();
+                    }}
+                    className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-cyan-400 text-slate-950 font-extrabold text-xs cursor-pointer shadow-[0_0_24px_rgba(34,211,238,0.45)]"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-slate-950 shrink-0" />
+                    <span>Quero Organizar Minha Empresa Agora</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-950 shrink-0" />
+                  </button>
+                )}
+
+                <div className="grid grid-cols-2 gap-2">
+                  <a
+                    href="#portfolio"
+                    onClick={() => sound.playClick(900)}
+                    className="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-white/10 text-white border border-white/20 font-bold text-[11px] cursor-pointer"
+                  >
+                    <Layers className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                    <span>Ver 6 Projetos</span>
+                  </a>
+
+                  <a
+                    href="#orcamento"
+                    onClick={() => sound.playSelect()}
+                    className="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[#060913]/90 text-cyan-300 border border-cyan-400/40 font-bold text-[11px] cursor-pointer"
+                  >
+                    <Calculator className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                    <span>Simular Orçamento</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Ultra-Slim Bottom Glass Scrubber Bar */}
+            <div className="px-3 py-1.5 rounded-xl bg-[#050811]/85 backdrop-blur-xl border border-white/15 flex items-center gap-2.5 shadow-xl">
+              <span className="text-[10px] font-mono text-rose-400 font-bold shrink-0">CAOS</span>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={revealPercent}
+                onChange={(e) => {
+                  setIsManualControl(true);
+                  setRevealPercent(Number(e.target.value));
+                }}
+                aria-label="Arrastar para comparar Antes e Depois"
+                className="w-full h-2 rounded-lg appearance-none bg-slate-800 accent-cyan-400 cursor-pointer"
               />
-            </div>
-
-            {/* Tiny Corner Badges */}
-            <div className="absolute top-2 left-2 z-20 pointer-events-none">
-              <span className="px-2 py-0.5 rounded-md bg-rose-950/90 border border-rose-500/60 text-rose-200 text-[9px] font-mono font-extrabold shadow">
-                ANTES
+              <span className="text-[10px] font-mono text-emerald-400 font-bold shrink-0">
+                01 WEB
+              </span>
+              <span className="text-[10px] font-mono font-extrabold text-cyan-300 tabular-nums shrink-0">
+                {revealPercent}%
               </span>
             </div>
-            <div className="absolute top-2 right-2 z-20 pointer-events-none">
-              <span className="px-2 py-0.5 rounded-md bg-emerald-950/90 border border-emerald-400/60 text-emerald-300 text-[9px] font-mono font-extrabold shadow">
-                A01 WEB
-              </span>
-            </div>
-
-            {/* Glowing Vertical Laser Beam & Compact Orb */}
-            <div
-              className="absolute inset-y-0 -ml-4 w-8 flex items-center justify-center pointer-events-none z-30"
-              style={{ left: `${revealPercent}%` }}
-            >
-              <div className="absolute inset-y-0 w-5 bg-gradient-to-r from-transparent via-cyan-400/35 to-transparent blur-sm" />
-              <div className="absolute inset-y-0 w-[2.5px] bg-gradient-to-b from-cyan-300 via-emerald-400 to-cyan-300 shadow-[0_0_18px_3px_rgba(34,211,238,0.9)]" />
-              <div className="relative w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-400 to-emerald-400 text-slate-950 flex items-center justify-center shadow-[0_0_18px_rgba(34,211,238,0.95)] border-2 border-white">
-                <ArrowLeftRight className="w-3.5 h-3.5 stroke-[2.5]" />
-              </div>
-            </div>
-          </div>
-
-          {/* 3. COMPACT MORPHING COPY + CTA CARD */}
-          <div
-            className={`p-3.5 rounded-2xl bg-[#070B16]/95 border shadow-2xl space-y-2.5 flex-1 flex flex-col justify-between min-h-0 ${
-              isAfterPhase ? 'border-cyan-400/45' : 'border-rose-500/35'
-            }`}
-          >
-            <AnimatePresence mode="wait">
-              {!isAfterPhase ? (
-                <motion.div
-                  key="mob-before"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.2 }}
-                  className="space-y-1.5"
-                >
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-500/15 border border-rose-500/40 text-rose-300 text-[10px] font-mono font-extrabold">
-                    <AlertTriangle className="w-3 h-3 text-rose-400 shrink-0" />
-                    <span>ROLE PARA TRANSFORMAR ↓</span>
-                  </div>
-
-                  <h1 className="text-[1.25rem] sm:text-2xl font-extrabold font-heading tracking-tight text-white leading-[1.12]">
-                    Site Feio e Atendimento Lento Estão{' '}
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-amber-300 to-rose-500">
-                      Entregando Seus Clientes.
-                    </span>
-                  </h1>
-
-                  <p className="text-[11.5px] sm:text-xs text-slate-200 leading-snug line-clamp-2">
-                    Página amadora ou demora no Zap faz você perder vendas em segundos. Role a tela
-                    e veja o padrão <strong className="text-white">01 WEB</strong>.
-                  </p>
-
-                  <div className="px-2.5 py-1.5 rounded-xl bg-rose-950/60 border border-rose-500/40 text-[11px] font-bold text-rose-100 truncate">
-                    ❌ 84% fecham o site antes de carregar
-                  </div>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="mob-after"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.2 }}
-                  className="space-y-1.5"
-                >
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-400/15 border border-emerald-400/50 text-emerald-300 text-[10px] font-mono font-extrabold">
-                    <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
-                    <span>PADRÃO A01 WEB ATIVO ({revealPercent}%)</span>
-                  </div>
-
-                  <h1 className="text-[1.25rem] sm:text-2xl font-extrabold font-heading tracking-tight text-white leading-[1.12]">
-                    Empresa Organizada,{' '}
-                    <span className="text-gradient-animated">
-                      Site de Elite & Robô 24/7 no Zap.
-                    </span>
-                  </h1>
-
-                  <p className="text-[11.5px] sm:text-xs text-slate-100 leading-snug line-clamp-2">
-                    Estrutura pronta em <strong className="text-emerald-300">3 a 7 dias</strong>:
-                    visual de autoridade, triagem automática e zero mensalidade.
-                  </p>
-
-                  <div className="px-2.5 py-1.5 rounded-xl bg-emerald-950/55 border border-emerald-400/45 text-[11px] font-bold text-emerald-100 flex items-center gap-1.5 truncate">
-                    <Bot className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                    <span className="truncate">
-                      Robô 24/7: &ldquo;Cliente qualificado pronto p/ fechar!&rdquo;
-                    </span>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <div className="space-y-1.5 pt-0.5 shrink-0">
-              {onOpenFunnel && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    sound.playClick(950);
-                    onOpenFunnel();
-                  }}
-                  className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-cyan-400 text-slate-950 font-extrabold text-xs cursor-pointer shadow-[0_0_20px_rgba(34,211,238,0.4)]"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-slate-950 shrink-0" />
-                  <span>Quero Organizar Minha Empresa Agora</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-slate-950 shrink-0" />
-                </button>
-              )}
-
-              <div className="grid grid-cols-2 gap-2">
-                <a
-                  href="#portfolio"
-                  onClick={() => sound.playClick(900)}
-                  className="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-white/10 text-white border border-white/20 font-bold text-[11px] cursor-pointer"
-                >
-                  <Layers className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                  <span>Ver 6 Projetos</span>
-                </a>
-
-                <a
-                  href="#orcamento"
-                  onClick={() => sound.playSelect()}
-                  className="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[#060913] text-cyan-300 border border-cyan-400/40 font-bold text-[11px] cursor-pointer"
-                >
-                  <Calculator className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                  <span>Simular Orçamento</span>
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* 4. BOTTOM GLASS SCROLL PROGRESS BAR (~30px) */}
-          <div className="px-3 py-1.5 rounded-xl bg-[#050811]/90 backdrop-blur-xl border border-white/15 flex items-center gap-2.5 shrink-0 shadow-lg">
-            <span className="text-[10px] font-mono text-rose-400 font-bold shrink-0">CAOS</span>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={revealPercent}
-              onChange={(e) => {
-                setIsManualControl(true);
-                setRevealPercent(Number(e.target.value));
-              }}
-              aria-label="Arrastar para comparar Antes e Depois"
-              className="w-full h-2 rounded-lg appearance-none bg-slate-800 accent-cyan-400 cursor-pointer"
-            />
-            <span className="text-[10px] font-mono text-emerald-400 font-bold shrink-0">
-              01 WEB
-            </span>
-            <span className="text-[10px] font-mono font-extrabold text-cyan-300 tabular-nums shrink-0">
-              {revealPercent}%
-            </span>
           </div>
         </div>
       </div>

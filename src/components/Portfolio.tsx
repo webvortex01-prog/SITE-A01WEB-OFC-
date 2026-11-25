@@ -510,13 +510,12 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
                       key={tab.idx}
                       type="button"
                       onClick={() => jumpToTheaterStage(tab.idx)}
-                      className={`px-3 py-1.5 rounded-xl text-[11px] font-mono font-extrabold transition-all cursor-pointer shrink-0 whitespace-nowrap ${
-                        isActive
+                      className={`px-3 py-1.5 rounded-xl text-[11px] font-mono font-extrabold transition-all cursor-pointer shrink-0 whitespace-nowrap ${isActive
                           ? 'bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950 shadow-[0_0_14px_rgba(34,211,238,0.45)] lg:scale-105'
                           : isPassed
-                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/35'
-                          : 'bg-slate-900 text-slate-400 hover:text-white border border-white/10'
-                      }`}
+                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/35'
+                            : 'bg-slate-900 text-slate-400 hover:text-white border border-white/10'
+                        }`}
                     >
                       {tab.label}
                     </button>
@@ -712,9 +711,8 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
                             {activeSpotlightProject.features.map((feat, idx) => (
                               <div
                                 key={idx}
-                                className={`${
-                                  idx < 2 ? 'flex' : 'hidden sm:flex'
-                                } items-start gap-2 text-[11px] sm:text-xs text-slate-200 leading-snug`}
+                                className={`${idx < 2 ? 'flex' : 'hidden sm:flex'
+                                  } items-start gap-2 text-[11px] sm:text-xs text-slate-200 leading-snug`}
                               >
                                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
                                 <span>{feat}</span>
@@ -913,11 +911,10 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
                         sound.playSelect();
                         setSelectedCategory(cat.id);
                       }}
-                      className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors duration-150 cursor-pointer whitespace-nowrap shrink-0 ${
-                        isSelected
+                      className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors duration-150 cursor-pointer whitespace-nowrap shrink-0 ${isSelected
                           ? 'bg-cyan-400 text-slate-950 font-bold'
                           : 'text-slate-300 hover:text-white hover:bg-white/5'
-                      }`}
+                        }`}
                     >
                       {cat.label}
                     </button>
