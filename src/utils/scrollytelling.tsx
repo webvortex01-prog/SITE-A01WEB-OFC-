@@ -83,6 +83,28 @@ export function useScrollTelemetry() {
   };
 }
 
+export function useIsDesktop(breakpoint = 1024): boolean {
+  const [isDesktop, setIsDesktop] = useState<boolean>(() =>
+    typeof window !== 'undefined' ? window.innerWidth >= breakpoint : true
+  );
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mq = window.matchMedia(`(min-width: ${breakpoint}px)`);
+    const update = () => setIsDesktop(mq.matches);
+    update();
+
+    if (typeof mq.addEventListener === 'function') {
+      mq.addEventListener('change', update);
+      return () => mq.removeEventListener('change', update);
+    }
+    mq.addListener(update);
+    return () => mq.removeListener(update);
+  }, [breakpoint]);
+
+  return isDesktop;
+}
+
 /**
  * 3D Scroll-Scrubbed Reveal Container (Apple/Awwwards style)
  * GPU-compositor optimized (only animates transform & opacity).
@@ -93,7 +115,7 @@ interface Scroll3DStageProps {
   intensity?: 'subtle' | 'medium' | 'dramatic';
 }
 
-export function Scroll3DStage({
+function Scroll3DStageDesktop({
   children,
   className = '',
   intensity = 'medium',
@@ -154,6 +176,22 @@ export function Scroll3DStage({
   );
 }
 
+export function Scroll3DStage({
+  children,
+  className = '',
+  intensity = 'medium',
+}: Scroll3DStageProps) {
+  const isDesktop = useIsDesktop();
+  if (!isDesktop) {
+    return <div className={className}>{children}</div>;
+  }
+  return (
+    <Scroll3DStageDesktop className={className} intensity={intensity}>
+      {children}
+    </Scroll3DStageDesktop>
+  );
+}
+
 /**
  * Sticky Stacking Card Wrapper ("Sobreposição de Cards com Pin")
  */
@@ -165,7 +203,7 @@ interface StickyStackCardProps {
   className?: string;
 }
 
-export function StickyStackCard({
+function StickyStackCardDesktop({
   children,
   index,
   totalCards,
@@ -221,6 +259,18 @@ export function StickyStackCard({
   );
 }
 
+export function StickyStackCard(props: StickyStackCardProps) {
+  const isDesktop = useIsDesktop();
+  if (!isDesktop) {
+    return (
+      <div className={`relative ${props.className || ''}`}>
+        <div className="scrolly-stack-shadow rounded-2xl">{props.children}</div>
+      </div>
+    );
+  }
+  return <StickyStackCardDesktop {...props} />;
+}
+
 /**
  * Parallax Layer that translates vertically according to scroll progress
  */
@@ -230,7 +280,7 @@ interface ScrollParallaxItemProps {
   className?: string;
 }
 
-export function ScrollParallaxItem({
+function ScrollParallaxItemDesktop({
   children,
   offsetY = 26,
   className = '',
@@ -255,6 +305,22 @@ export function ScrollParallaxItem({
     <motion.div ref={ref} style={{ y, scale, opacity }} className={`will-change-transform ${className}`}>
       {children}
     </motion.div>
+  );
+}
+
+export function ScrollParallaxItem({
+  children,
+  offsetY = 26,
+  className = '',
+}: ScrollParallaxItemProps) {
+  const isDesktop = useIsDesktop();
+  if (!isDesktop) {
+    return <div className={className}>{children}</div>;
+  }
+  return (
+    <ScrollParallaxItemDesktop offsetY={offsetY} className={className}>
+      {children}
+    </ScrollParallaxItemDesktop>
   );
 }
 

@@ -61,6 +61,7 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
   const progressBarScaleX = useTransform(smoothTheaterProgress, [0, 1], [0.08, 1]);
 
   useMotionValueEvent(theaterProgress, 'change', (v) => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) return;
     let nextStage = 0;
     if (v < 0.23) nextStage = 0;
     else if (v < 0.5) nextStage = 1;
@@ -485,7 +486,7 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
         <div ref={theaterTrackRef} className="relative lg:min-h-[390vh] py-12 lg:py-0">
           <div className="lg:sticky lg:top-15 lg:py-3 flex flex-col justify-center space-y-3">
             {/* Top Theater HUD Bar (Works on Scroll AND Click) */}
-            <div className="sticky top-16 z-30 lg:static flex flex-wrap items-center justify-between gap-2.5 p-2.5 sm:px-4 sm:py-2.5 rounded-2xl bg-[#0B0F1A]/95 backdrop-blur-xl border border-cyan-400/30 shadow-2xl">
+            <div className="relative z-20 lg:static flex flex-wrap items-center justify-between gap-2.5 p-2.5 sm:px-4 sm:py-2.5 rounded-2xl bg-[#0B0F1A]/95 backdrop-blur-xl border border-cyan-400/30 shadow-2xl">
               <div className="flex items-center gap-2.5 text-xs font-mono">
                 <MousePointerClick className="w-4 h-4 text-cyan-400 shrink-0" />
                 <span className="text-slate-300 font-bold">
@@ -496,7 +497,7 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
               </div>
 
               {/* Interactive Stage Pills */}
-              <div className="flex flex-wrap items-center gap-1.5">
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar w-full lg:w-auto lg:flex-wrap pb-0.5">
                 {[
                   { idx: 0, label: '1. O Que Entregamos' },
                   { idx: 1, label: '2. #01 Advocacia' },
@@ -510,9 +511,9 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
                       key={tab.idx}
                       type="button"
                       onClick={() => jumpToTheaterStage(tab.idx)}
-                      className={`px-3 py-1.5 rounded-xl text-[11px] font-mono font-extrabold transition-all cursor-pointer ${
+                      className={`px-3 py-1.5 rounded-xl text-[11px] font-mono font-extrabold transition-all cursor-pointer shrink-0 whitespace-nowrap ${
                         isActive
-                          ? 'bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950 shadow-[0_0_14px_rgba(34,211,238,0.45)] scale-105'
+                          ? 'bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950 shadow-[0_0_14px_rgba(34,211,238,0.45)] lg:scale-105'
                           : isPassed
                           ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/35'
                           : 'bg-slate-900 text-slate-400 hover:text-white border border-white/10'
@@ -526,7 +527,7 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
                 <button
                   type="button"
                   onClick={scrollToAllModels}
-                  className="px-3 py-1.5 rounded-xl text-[11px] font-mono font-bold bg-white/5 hover:bg-white/10 text-cyan-300 border border-cyan-400/30 cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl text-[11px] font-mono font-bold bg-white/5 hover:bg-white/10 text-cyan-300 border border-cyan-400/30 cursor-pointer shrink-0 whitespace-nowrap"
                 >
                   Ver Todos os 6 ↓
                 </button>
@@ -542,7 +543,7 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
             </div>
 
             {/* Dynamic 3D Stage Content */}
-            <div className="scrolly-perspective min-h-[410px] flex items-center">
+            <div className="scrolly-perspective lg:min-h-[410px] flex items-center">
               <AnimatePresence mode="wait">
                 {spotlightStage === 0 ? (
                   /* =========================================================
@@ -746,7 +747,7 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
                               </button>
                             </div>
 
-                            <div className="flex items-center justify-between pt-1">
+                            <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
                               <button
                                 type="button"
                                 onClick={() => {

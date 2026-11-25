@@ -473,7 +473,7 @@ export default function ClientReviewsGallery() {
 
           {/* 3D Perspective Container */}
           <div
-            className="relative h-[430px] sm:h-[410px] w-full flex items-center justify-center overflow-visible"
+            className="relative min-h-[470px] sm:min-h-0 sm:h-[410px] w-full flex items-center justify-center overflow-visible"
             style={{ perspective: '1400px', transformStyle: 'preserve-3d' }}
           >
             {activeTab === 'reviews'
@@ -503,7 +503,7 @@ export default function ClientReviewsGallery() {
                         transformStyle: 'preserve-3d',
                         pointerEvents: Math.abs(offset) > 2 ? 'none' : 'auto',
                       }}
-                      className={`absolute w-[92%] sm:w-[540px] lg:w-[600px] rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-colors ${
+                      className={`absolute w-[92%] sm:w-[540px] lg:w-[600px] rounded-3xl p-5 sm:p-8 flex flex-col justify-between transition-colors ${
                         isCenter
                           ? 'bg-gradient-to-br from-[#0D1528] via-[#0B1020] to-[#081620] border-2 border-cyan-400 shadow-[0_25px_80px_-15px_rgba(34,211,238,0.35)] cursor-default'
                           : 'bg-[#090D18]/95 border border-white/15 hover:border-cyan-400/50 cursor-pointer shadow-2xl'
@@ -620,7 +620,7 @@ export default function ClientReviewsGallery() {
                         transformStyle: 'preserve-3d',
                         pointerEvents: Math.abs(offset) > 2 ? 'none' : 'auto',
                       }}
-                      className={`absolute w-[92%] sm:w-[540px] lg:w-[600px] rounded-3xl p-6 sm:p-8 space-y-4 ${
+                      className={`absolute w-[92%] sm:w-[540px] lg:w-[600px] rounded-3xl p-5 sm:p-8 space-y-4 ${
                         isCenter
                           ? 'bg-[#0B141A] border-2 border-emerald-400 shadow-[0_25px_80px_-15px_rgba(16,185,129,0.35)] cursor-default'
                           : 'bg-[#081015]/95 border border-emerald-500/25 cursor-pointer shadow-2xl'

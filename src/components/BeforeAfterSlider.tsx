@@ -11,6 +11,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { sound } from '../utils/audio';
+import { useIsDesktop } from '../utils/scrollytelling';
 
 interface NicheComparison {
   id: 'advocacia' | 'carros' | 'estetica';
@@ -98,6 +99,7 @@ const NICHE_COMPARISONS: NicheComparison[] = [
 ];
 
 export default function BeforeAfterSlider() {
+  const isDesktop = useIsDesktop();
   // sliderPosition: 0% = 100% 01 WEB visible; 100% = 100% Site Comum visible; 50% = 50/50 split
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isManualControl, setIsManualControl] = useState(false);
@@ -125,6 +127,7 @@ export default function BeforeAfterSlider() {
 
   // Automatic scroll sweep from 100% (Site Comum) -> 0% (100% Padrão 01 WEB) unless user is manually dragging
   useMotionValueEvent(smoothScroll, 'change', (latest) => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) return;
     if (latest < 0.04 || latest > 0.96) {
       if (isManualControl && !isDragging) setIsManualControl(false);
       return;
@@ -155,11 +158,15 @@ export default function BeforeAfterSlider() {
     >
       <div className="lg:sticky lg:top-15 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 scrolly-perspective">
         <motion.div
-          style={{
-            scale: stageScale,
-            rotateX: stageRotateX,
-            transformStyle: 'preserve-3d',
-          }}
+          style={
+            isDesktop
+              ? {
+                  scale: stageScale,
+                  rotateX: stageRotateX,
+                  transformStyle: 'preserve-3d',
+                }
+              : undefined
+          }
         >
           <div className="text-center max-w-3xl mx-auto space-y-2 mb-4">
             <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-mono text-cyan-400">
@@ -247,11 +254,159 @@ export default function BeforeAfterSlider() {
           </div>
 
           {/* ===================================================================
-              INTERACTIVE X-RAY VISUAL SCANNER CONTAINER (CLIP-PATH ENGINE)
+              DEDICATED MOBILE COMPARISON CARD (< 768px): ZERO CLIPPING!
+             =================================================================== */}
+          <div className="block md:hidden space-y-3">
+            <div className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-[#0B0F1A] border border-white/15">
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playSelect();
+                  setIsManualControl(true);
+                  setSliderPosition(0);
+                }}
+                className={`py-2.5 px-3 rounded-xl text-xs font-mono font-extrabold transition-all cursor-pointer ${
+                  sliderPosition <= 50
+                    ? 'bg-gradient-to-r from-emerald-400 to-cyan-400 text-slate-950 shadow-lg'
+                    : 'text-slate-300'
+                }`}
+              >
+                🚀 Padrão 01 WEB
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playSelect();
+                  setIsManualControl(true);
+                  setSliderPosition(100);
+                }}
+                className={`py-2.5 px-3 rounded-xl text-xs font-mono font-extrabold transition-all cursor-pointer ${
+                  sliderPosition > 50
+                    ? 'bg-rose-500 text-white shadow-lg'
+                    : 'text-slate-300'
+                }`}
+              >
+                ❌ Site Comum
+              </button>
+            </div>
+
+            {sliderPosition <= 50 ? (
+              <div className="rounded-3xl bg-[#050811] border-2 border-cyan-400/50 overflow-hidden shadow-2xl">
+                <div className="relative h-36 overflow-hidden">
+                  <img
+                    src={currentNiche.imageUrl}
+                    alt={currentNiche.afterTitle}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover opacity-70"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#050811] via-[#050811]/35 to-transparent" />
+                  <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 text-[10px] font-mono">
+                    <span className="px-2.5 py-1 rounded-full bg-emerald-950/90 border border-emerald-400/50 text-emerald-300 font-extrabold truncate">
+                      {currentNiche.afterBadge}
+                    </span>
+                    <span className="px-2.5 py-1 rounded-full bg-cyan-400 text-slate-950 font-extrabold shrink-0">
+                      100/100
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-5 space-y-4 text-left">
+                  <div className="space-y-2">
+                    <div className="text-[11px] font-mono text-cyan-300 font-bold uppercase">
+                      ✓ Design Scrollytelling · ✓ Triagem 24/7
+                    </div>
+                    <h3 className="text-xl font-extrabold font-heading text-white leading-tight">
+                      {currentNiche.afterTitle}
+                    </h3>
+                    <p className="text-xs text-slate-200 leading-relaxed">
+                      {currentNiche.afterSubtitle}
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-[#070C18] border border-cyan-400/35 space-y-2">
+                    <div className="flex items-center justify-between text-[11px] font-mono pb-1.5 border-b border-white/10">
+                      <span className="text-cyan-300 font-bold">TELEMETRIA 01 WEB</span>
+                      <span className="text-emerald-400 font-extrabold">ALTA CONVERSÃO</span>
+                    </div>
+                    {currentNiche.afterMetrics.map((m) => (
+                      <div key={m} className="flex items-start gap-2 text-xs text-slate-100">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                        <span>{m}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="pt-2 border-t border-white/10 flex flex-col gap-1.5 text-[11px] font-mono">
+                    <span className="text-emerald-400 font-bold flex items-center gap-1.5">
+                      <Smartphone className="w-3.5 h-3.5 shrink-0" /> Abre em &lt; 0.8s no Celular
+                    </span>
+                    <span className="text-cyan-300 font-bold flex items-center gap-1.5">
+                      <Bot className="w-3.5 h-3.5 shrink-0" /> Cliente já chega qualificado no WhatsApp
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-3xl bg-[#0E090C] border-2 border-rose-500/45 overflow-hidden shadow-2xl">
+                <div className="relative h-36 overflow-hidden">
+                  <img
+                    src={currentNiche.imageUrl}
+                    alt="Site comum lento"
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover grayscale contrast-75 blur-[1.5px] opacity-30"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0E090C] via-[#110D13]/60 to-transparent" />
+                  <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 text-[10px] font-mono">
+                    <span className="px-2.5 py-1 rounded-full bg-rose-950 border border-rose-500/50 text-rose-300 font-extrabold truncate">
+                      SITE COMUM / GENÉRICO
+                    </span>
+                    <span className="px-2.5 py-1 rounded-full bg-rose-600 text-white font-extrabold shrink-0">
+                      LENTO 6.4s+
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-5 space-y-4 text-left">
+                  <div className="space-y-2">
+                    <div className="text-[11px] font-mono text-rose-400 font-bold uppercase">
+                      ❌ Excesso de Plugins · ❌ Sem Triagem
+                    </div>
+                    <h3 className="text-xl font-extrabold font-heading text-slate-200 leading-tight">
+                      {currentNiche.beforeTitle}
+                    </h3>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      {currentNiche.beforeSubtitle}
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-[#160B10] border border-rose-500/40 space-y-2">
+                    <div className="flex items-center justify-between text-[11px] font-mono pb-1.5 border-b border-rose-500/20">
+                      <span className="text-rose-400 font-bold">DIAGNÓSTICO DE FALHAS</span>
+                      <span className="text-rose-300 font-extrabold">BAIXA CONVERSÃO</span>
+                    </div>
+                    {currentNiche.beforeProblems.map((prob) => (
+                      <div key={prob} className="flex items-start gap-2 text-xs text-rose-100/90">
+                        <XCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                        <span>{prob}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="pt-2 border-t border-rose-500/20 flex flex-col gap-1 text-[11px] font-mono text-rose-300">
+                    <span className="font-bold">❌ 84% dos clientes desistem antes de carregar</span>
+                    <span>Perda diária de orçamentos para o concorrente</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ===================================================================
+              INTERACTIVE X-RAY VISUAL SCANNER CONTAINER (CLIP-PATH ENGINE - DESKTOP/TABLET)
               Uses CSS clip-path on a 100% solid opaque top layer so texts NEVER
               overlap or bleed through, and drags smoothly from 0% to 100%!
              =================================================================== */}
-          <div className="max-w-5xl mx-auto">
+          <div className="hidden md:block max-w-5xl mx-auto">
             <div
               ref={containerRef}
               onPointerDown={(e) => {

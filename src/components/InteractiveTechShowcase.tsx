@@ -25,12 +25,14 @@ import {
 } from 'lucide-react';
 import { sound } from '../utils/audio';
 import ScrollReactiveImage from './ScrollReactiveImage';
+import { useIsDesktop } from '../utils/scrollytelling';
 
 interface InteractiveTechShowcaseProps {
   onOpenFunnel: () => void;
 }
 
 export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTechShowcaseProps) {
+  const isDesktop = useIsDesktop();
   const [activeLayer, setActiveLayer] = useState<number>(0);
   // activeStep: 0 = Step 1, 1 = Step 2, 2 = Step 3, 3 = Step 4, 4 = ALL 4 COMPLETED FINALE!
   const [activeStep, setActiveStep] = useState<number>(0);
@@ -47,6 +49,7 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
   });
 
   useMotionValueEvent(layersProgress, 'change', (v) => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) return;
     const clamped = Math.min(0.999, Math.max(0, v));
     const nextIdx = Math.min(3, Math.max(0, Math.floor(clamped * 4)));
     setActiveLayer((prev) => (prev !== nextIdx ? nextIdx : prev));
@@ -69,6 +72,7 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
   const laserScaleY = useTransform(smoothTimelineProgress, [0, 0.85, 1], [0.12, 1, 1]);
 
   useMotionValueEvent(timelineProgress, 'change', (v) => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) return;
     let nextStep = 0;
     if (v < 0.2) nextStep = 0;
     else if (v < 0.4) nextStep = 1;
@@ -299,8 +303,8 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
                 </h2>
               </div>
 
-              {/* Scroll Progress Pill for Layers (Sticky on Mobile for thumb navigation) */}
-              <div className="sticky top-17 z-30 lg:static flex items-center justify-between sm:justify-start gap-2 sm:gap-3 px-3.5 py-2.5 rounded-2xl bg-[#0B0F1A]/95 backdrop-blur-md border border-cyan-400/30 shrink-0 shadow-lg">
+              {/* Scroll Progress Pill for Layers */}
+              <div className="relative z-20 lg:static flex items-center justify-between sm:justify-start gap-2 sm:gap-3 px-3.5 py-2.5 rounded-2xl bg-[#0B0F1A]/95 backdrop-blur-md border border-cyan-400/30 shrink-0 shadow-lg">
                 <div className="flex items-center gap-2 text-xs font-mono">
                   <MousePointerClick className="w-4 h-4 text-cyan-400 shrink-0" />
                   <span className="text-slate-400 hidden sm:inline">Camada Ativa: </span>
@@ -357,8 +361,8 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
                         )
                       }
                       animate={{
-                        scale: isSelected ? 1.02 : 0.97,
-                        x: isSelected ? 12 : 0,
+                        scale: isDesktop ? (isSelected ? 1.02 : 0.97) : 1,
+                        x: isDesktop && isSelected ? 12 : 0,
                       }}
                       transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
                       className={`w-full text-left p-4 sm:p-5 rounded-2xl border transition-colors cursor-pointer flex items-center justify-between gap-4 ${
@@ -381,7 +385,7 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
                             <span className="text-slate-600">·</span>
                             <span className="text-slate-300 truncate">{layer.metricValue}</span>
                           </div>
-                          <h3 className="text-sm sm:text-base font-bold font-heading text-white truncate">
+                          <h3 className="text-sm sm:text-base font-bold font-heading text-white sm:truncate">
                             {layer.title}
                           </h3>
                         </div>
@@ -531,7 +535,7 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
                 </h3>
               </div>
 
-              <div className="sticky top-17 z-30 lg:static flex items-center justify-between sm:justify-start gap-2 sm:gap-3 px-3.5 py-2.5 rounded-2xl bg-[#0B0F1A]/95 backdrop-blur-md border border-emerald-400/35 shrink-0 shadow-lg">
+              <div className="relative z-20 lg:static flex items-center justify-between sm:justify-start gap-2 sm:gap-3 px-3.5 py-2.5 rounded-2xl bg-[#0B0F1A]/95 backdrop-blur-md border border-emerald-400/35 shrink-0 shadow-lg">
                 <span className="text-xs font-mono text-slate-300">
                   {isAllCompleted ? (
                     <strong className="text-emerald-400 flex items-center gap-1.5">
@@ -602,7 +606,7 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
                 {/* Vertical Background Track Line */}
                 <div className="absolute left-5 sm:left-6 top-6 bottom-6 w-[3px] bg-slate-800/90 rounded-full overflow-hidden">
                   <motion.div
-                    style={{ scaleY: laserScaleY }}
+                    style={{ scaleY: isDesktop ? laserScaleY : 1 }}
                     className={`w-full h-full origin-top transition-colors duration-300 ${
                       isAllCompleted
                         ? 'bg-emerald-400 shadow-[0_0_18px_#10b981]'
@@ -627,23 +631,27 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
                           stepInspectorRef
                         )
                       }
-                      animate={{
-                        x: isCurrent ? 8 : 0,
-                        scale: isAllCompleted
-                          ? 1
-                          : isCurrent
-                          ? 1.015
-                          : isCompleted
-                          ? 0.99
-                          : 0.95,
-                        opacity: isAllCompleted
-                          ? 1
-                          : isCurrent
-                          ? 1
-                          : isCompleted
-                          ? 0.9
-                          : 0.38,
-                      }}
+                      animate={
+                        isDesktop
+                          ? {
+                              x: isCurrent ? 8 : 0,
+                              scale: isAllCompleted
+                                ? 1
+                                : isCurrent
+                                ? 1.015
+                                : isCompleted
+                                ? 0.99
+                                : 0.95,
+                              opacity: isAllCompleted
+                                ? 1
+                                : isCurrent
+                                ? 1
+                                : isCompleted
+                                ? 0.9
+                                : 0.38,
+                            }
+                          : { x: 0, scale: 1, opacity: 1 }
+                      }
                       transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                       className={`relative p-3 sm:p-3.5 rounded-2xl border transition-all cursor-pointer ${
                         isAllCompleted

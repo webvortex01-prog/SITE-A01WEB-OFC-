@@ -61,7 +61,7 @@ export default function Header({
         : 'bg-[#06080F]/80 backdrop-blur-md border-b border-white/5'
         }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 sm:gap-6">
         {/* Zone 1: Single text element wordmark */}
         <div className="flex items-center gap-3">
           <a
@@ -80,7 +80,7 @@ export default function Header({
               onOpenAdmin();
             }}
             title="Abrir Sistema Operacional do CEO (ERP & Leads)"
-            className="relative px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/40 text-cyan-300 hover:text-white transition-all cursor-pointer flex items-center gap-1.5 text-xs font-mono font-bold shadow-md shadow-cyan-950/50"
+            className="hidden sm:flex relative px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/40 text-cyan-300 hover:text-white transition-all cursor-pointer items-center gap-1.5 text-xs font-mono font-bold shadow-md shadow-cyan-950/50"
           >
             <Shield className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
             <span className="text-[11px] whitespace-nowrap">Sistema CEO</span>
@@ -121,10 +121,11 @@ export default function Header({
               sound.playClick(950);
               onOpenFunnel();
             }}
-            className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 font-extrabold text-xs tracking-tight transition-all duration-150 whitespace-nowrap shrink-0 cursor-pointer shadow-lg shadow-cyan-950/40"
+            className="inline-flex items-center gap-2 px-3 sm:px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 font-extrabold text-xs tracking-tight transition-all duration-150 whitespace-nowrap shrink-0 cursor-pointer shadow-lg shadow-cyan-950/40"
           >
             <Sparkles className="w-3.5 h-3.5 text-slate-950" />
-            <span>Diagnóstico do Negócio</span>
+            <span className="sm:hidden">Diagnóstico</span>
+            <span className="hidden sm:inline">Diagnóstico do Negócio</span>
             <ArrowRight className="w-3.5 h-3.5 text-slate-950 hidden sm:inline" />
           </button>
 
