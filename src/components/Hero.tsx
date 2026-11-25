@@ -145,7 +145,7 @@ function HeroMobile({ onOpenFunnel }: HeroProps) {
 
           {/* Sub-layer 2B: Razor-Sharp Edge-to-Edge Upper Photo with Seamless Bottom Dissolve */}
           <div
-            className="absolute top-0 inset-x-0 h-[56svh] overflow-hidden pointer-events-none"
+            className="absolute top-16 inset-x-0 h-[50svh] overflow-hidden pointer-events-none"
             style={{
               maskImage:
                 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 58%, rgba(0,0,0,0) 100%)',
@@ -157,7 +157,7 @@ function HeroMobile({ onOpenFunnel }: HeroProps) {
               src="/images/hero-depois-a01web.jpg"
               alt="Depois: A01 WEB Empresa Organizada e Automations"
               style={{ scale: afterBgScale }}
-              className="w-full h-full object-cover object-[68%_18%] will-change-transform"
+              className="w-full h-full object-cover object-[70%_12%] will-change-transform"
             />
           </div>
 
@@ -175,7 +175,9 @@ function HeroMobile({ onOpenFunnel }: HeroProps) {
             FULL-SCREEN VERTICAL LASER SHOCKWAVE BEAM (z-30)
            =================================================================== */}
         <div
-          className="absolute inset-y-0 -ml-6 w-12 pointer-events-none z-30"
+          className={`absolute inset-y-0 -ml-6 w-12 pointer-events-none z-30 transition-opacity duration-200 ${
+            revealPercent <= 2 || revealPercent >= 98 ? 'opacity-0' : 'opacity-100'
+          }`}
           style={{ left: `${revealPercent}%` }}
         >
           <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-8 bg-gradient-to-r from-transparent via-cyan-400/35 to-transparent blur-md" />
@@ -187,74 +189,11 @@ function HeroMobile({ onOpenFunnel }: HeroProps) {
 
         {/* ===================================================================
             FOREGROUND FLOATING GLASS OVERLAY (z-40)
-            - Top Bar: Status Pill + Quick-Jump Pills
-            - Middle: 100% OPEN & CLEAR so the full-bleed photo & laser breathe!
+            - Top/Middle: 100% OPEN & CLEAR so the full-bleed photo & faces breathe!
             - Bottom: Translucent Floating Glass Card + Scrubber Bar
            =================================================================== */}
         <div className="relative z-40 w-full h-full flex flex-col justify-between pt-[72px] pb-3 px-3.5 pointer-events-none">
-          {/* TOP ROW */}
-          <div className="flex items-center justify-between gap-1.5 pointer-events-auto max-w-xl w-full mx-auto">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#060913]/80 backdrop-blur-xl border border-white/15 shadow-lg min-w-0">
-              <span
-                className={`w-2 h-2 rounded-full shrink-0 ${
-                  isAfterPhase
-                    ? 'bg-emerald-400 shadow-[0_0_8px_#10b981] animate-ping'
-                    : 'bg-rose-500 shadow-[0_0_8px_#f43f5e] animate-pulse'
-                }`}
-              />
-              <span className="text-[10px] font-mono font-extrabold tracking-wide uppercase text-white truncate">
-                {isAfterPhase ? 'FASE 02 · A01 WEB' : 'FASE 01 · CAOS'}
-              </span>
-            </div>
-
-            <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-[#060913]/85 backdrop-blur-xl border border-white/20 shadow-lg shrink-0">
-              <button
-                type="button"
-                onClick={() => {
-                  sound.playSelect();
-                  setIsManualControl(true);
-                  setRevealPercent(0);
-                }}
-                className={`px-2 py-1 rounded-lg text-[10px] font-mono font-extrabold transition-all cursor-pointer ${
-                  revealPercent < 25 ? 'bg-rose-500 text-white shadow' : 'text-slate-300'
-                }`}
-              >
-                Antes
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  sound.playSelect();
-                  setIsManualControl(true);
-                  setRevealPercent(50);
-                }}
-                className={`px-2 py-1 rounded-lg text-[10px] font-mono font-extrabold transition-all cursor-pointer ${
-                  revealPercent >= 25 && revealPercent <= 75
-                    ? 'bg-cyan-400 text-slate-950 shadow'
-                    : 'text-slate-300'
-                }`}
-              >
-                50/50
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  sound.playSelect();
-                  setIsManualControl(true);
-                  setRevealPercent(100);
-                }}
-                className={`px-2 py-1 rounded-lg text-[10px] font-mono font-extrabold transition-all cursor-pointer ${
-                  revealPercent > 75
-                    ? 'bg-gradient-to-r from-emerald-400 to-cyan-400 text-slate-950 shadow'
-                    : 'text-slate-300'
-                }`}
-              >
-                A01 WEB
-              </button>
-            </div>
-          </div>
-
-          {/* MIDDLE: Open breathing space over the full-screen background scene */}
+          {/* TOP & MIDDLE: Completely clear open breathing space over the full-screen background scene */}
           <div className="flex-1" />
 
           {/* BOTTOM STACK: Floating Glass Copy & CTA Card + Scrubber Bar */}
