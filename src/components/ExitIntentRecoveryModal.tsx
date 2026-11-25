@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { sound } from '../utils/audio';
 import { leadService } from '../services/leadService';
+import { pixelService } from '../services/pixelService';
 
 const QUICK_NICHES = [
   'Advocacia & Jurídico',
@@ -164,6 +165,8 @@ export default function ExitIntentRecoveryModal() {
       needLabel: 'Estrutura 01 WEB + Voucher Bônus R$ 1.030',
       urgency: 'imediato',
       urgencyLabel: 'Recuperação de Saída (Quente)',
+      investmentTier: '1000_2500',
+      investmentRange: 'R$ 1.000 a R$ 2.500',
       budgetEstimate: 1850,
       temperature: 'HOT',
       score: 98,
@@ -181,8 +184,9 @@ export default function ExitIntentRecoveryModal() {
       `🎁 *VOUCHER DE R$ 1.030 + MODELOS SALVOS — 01 WEB*\n\n` +
         `👤 *Nome:* ${name.trim() || 'Cliente'}\n` +
         `📱 *Meu WhatsApp:* ${whatsapp}\n` +
-        `🎯 *Meu Ramo:* ${selectedNiche}\n\n` +
-        `_Estava navegando no site da 01 WEB e quero deixar salvo meu Voucher de 1 Ano de Domínio .com.br + Hospedagem VIP Grátis e receber os exemplos do meu nicho!_`
+        `🎯 *Meu Ramo:* ${selectedNiche}\n` +
+        pixelService.formatUtmForWhatsApp() +
+        `\n\n_Estava navegando no site da 01 WEB e quero deixar salvo meu Voucher de 1 Ano de Domínio .com.br + Hospedagem VIP Grátis e receber os exemplos do meu nicho!_`
     );
 
     setTimeout(() => {

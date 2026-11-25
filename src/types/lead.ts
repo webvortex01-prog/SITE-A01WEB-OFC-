@@ -47,6 +47,10 @@ export interface Lead {
   urgency: LeadUrgency;
   urgencyLabel: string;
   budgetEstimate?: number;
+  investmentRange?: string;
+  investmentTier?: 'ate_500' | '1000_2500' | '2500_5000' | 'acima_5000';
+  utmSummary?: string;
+  isPuroSuco?: boolean;
   status: LeadStatus;
   temperature?: LeadTemperature; // HOT (Quente), WARM (Morno), COLD (Frio)
   notes?: string;

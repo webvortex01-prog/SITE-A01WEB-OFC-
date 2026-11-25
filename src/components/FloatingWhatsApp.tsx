@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { MessageCircle, Sparkles, ArrowRight, X } from 'lucide-react';
 import { sound } from '../utils/audio';
+import { pixelService } from '../services/pixelService';
 
 interface FloatingWhatsAppProps {
   onOpenFunnel: () => void;
@@ -9,10 +10,13 @@ interface FloatingWhatsAppProps {
 export default function FloatingWhatsApp({ onOpenFunnel }: FloatingWhatsAppProps) {
   const [showTooltip, setShowTooltip] = useState(true);
 
-  const directMsg = encodeURIComponent(
-    'Olá 01 WEB! Vim pelo site e quero conversar sobre uma estrutura para minha empresa.'
-  );
-  const directWhatsappHref = `https://wa.me/5566999697087?text=${directMsg}`;
+  const buildWhatsappHref = () => {
+    const utmInfo = pixelService.formatUtmForWhatsApp();
+    const directMsg = encodeURIComponent(
+      `Olá 01 WEB! Vim pelo site e quero conversar sobre uma estrutura para minha empresa.${utmInfo}`
+    );
+    return `https://wa.me/5566999697087?text=${directMsg}`;
+  };
 
   return (
     <div className="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-2">
@@ -53,10 +57,13 @@ export default function FloatingWhatsApp({ onOpenFunnel }: FloatingWhatsAppProps
 
         {/* WhatsApp Direct or Funnel Button */}
         <a
-          href={directWhatsappHref}
+          href={buildWhatsappHref()}
           target="_blank"
           rel="noopener noreferrer"
-          onClick={() => sound.playClick(900)}
+          onClick={() => {
+            sound.playClick(900);
+            pixelService.trackWhatsAppContact('Botão Flutuante WhatsApp');
+          }}
           aria-label="Falar com Especialista no WhatsApp"
           className="group inline-flex items-center gap-2.5 px-4 py-3.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-extrabold text-xs shadow-xl shadow-emerald-950/60 transition-all duration-200 cursor-pointer"
         >

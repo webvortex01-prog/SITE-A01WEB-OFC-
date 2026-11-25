@@ -21,6 +21,7 @@ import {
 import { sound } from '../utils/audio';
 import { leadService } from '../services/leadService';
 import { Scroll3DStage } from '../utils/scrollytelling';
+import { pixelService, InvestmentTier } from '../services/pixelService';
 
 interface BudgetCalculatorProps {
   initialProjectName?: string;
@@ -116,6 +117,7 @@ export default function BudgetCalculator({
 
   const handleToggleFeature = (id: string) => {
     sound.playSelect();
+    pixelService.trackInitiateCheckout('Interagiu no Simulador de Orçamento', total);
     setSelectedFeatures((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
@@ -123,6 +125,7 @@ export default function BudgetCalculator({
 
   const handleProjectTypeSelect = (type: ProjectConfig['projectType']) => {
     sound.playSelect();
+    pixelService.trackInitiateCheckout('Interagiu no Simulador de Orçamento', total);
     setProjectType(type);
   };
 
@@ -138,6 +141,15 @@ export default function BudgetCalculator({
 
   const projectTypeName = projectTypeOptions.find((p) => p.id === projectType)?.title;
 
+  const derivedInvestmentTier: InvestmentTier =
+    total >= 5000
+      ? 'acima_5000'
+      : total >= 2500
+      ? '2500_5000'
+      : total >= 1000
+      ? '1000_2500'
+      : 'ate_500';
+
   const whatsappMessage = encodeURIComponent(
     `Olá 01 WEB! Montei meu orçamento no site e gostaria de conversar sobre meu projeto:\n\n` +
       `👤 Nome: ${clientName || 'Cliente'}\n` +
@@ -149,7 +161,8 @@ export default function BudgetCalculator({
       `📄 Páginas/Módulos: ${pagesCount}\n` +
       `⚡ Recursos: ${selectedFeatNames || 'Estrutura Base'}\n` +
       `💰 Valor Estimado: R$ ${total.toLocaleString('pt-BR')}\n` +
-      `✅ Incluso: 1 Ano de Hospedagem + Domínio Próprio`
+      `✅ Incluso: 1 Ano de Hospedagem + Domínio Próprio` +
+      pixelService.formatUtmForWhatsApp()
   );
 
   const whatsappUrl = `https://wa.me/5566999697087?text=${whatsappMessage}`;
@@ -195,6 +208,8 @@ export default function BudgetCalculator({
       needLabel: projectTypeName || 'Projeto Personalizado',
       urgency: 'imediato',
       urgencyLabel: 'Imediato (esta semana)',
+      investmentTier: derivedInvestmentTier,
+      investmentRange: `R$ ${total.toLocaleString('pt-BR')} (Simulador)`,
       budgetEstimate: total,
       source: 'calculadora_orcamento',
       diagnosticSummary: `Estrutura: ${projectTypeName}. Páginas: ${pagesCount}. Recursos: ${selectedFeatNames || 'Base'}.${
@@ -554,6 +569,7 @@ export default function BudgetCalculator({
                       href={whatsappUrl}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() => pixelService.trackWhatsAppContact('Simulador de Orçamento', total)}
                       className="btn-cyber-primary w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-extrabold text-xs cursor-pointer"
                     >
                       <MessageCircle className="w-4 h-4" />

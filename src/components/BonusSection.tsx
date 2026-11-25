@@ -18,6 +18,7 @@ import {
 import { EXCLUSIVE_BONUS_ITEMS, getTotalBonusValue } from '../utils/calculator';
 import { sound } from '../utils/audio';
 import { Scroll3DStage } from '../utils/scrollytelling';
+import { pixelService } from '../services/pixelService';
 
 export default function BonusSection() {
   const [copiedCode, setCopiedCode] = useState(false);
@@ -25,6 +26,7 @@ export default function BonusSection() {
 
   const handleClaimBonus = () => {
     sound.playSuccess();
+    pixelService.trackWhatsAppContact('Resgate Bônus R$ 1.030', 1030);
     try {
       confetti({
         particleCount: 100,
@@ -38,8 +40,9 @@ export default function BonusSection() {
 
     const msg = encodeURIComponent(
       `Olá 01 WEB! Acessei através do site e quero resgatar o BÔNUS EXCLUSIVO DE R$ 1.030,00 ` +
-      `(1 Ano de Hospedagem Edge CDN + 1 Ano de Domínio Próprio + E-mail Corporativo Grátis). ` +
-      `Código VIP: [BONUS_SITE_01WEB]. Como podemos iniciar meu projeto?`
+        `(1 Ano de Hospedagem Edge CDN + 1 Ano de Domínio Próprio + E-mail Corporativo Grátis). ` +
+        `Código VIP: [BONUS_SITE_01WEB]. Como podemos iniciar meu projeto?` +
+        pixelService.formatUtmForWhatsApp()
     );
     window.open(`https://wa.me/5566999697087?text=${msg}`, '_blank');
   };

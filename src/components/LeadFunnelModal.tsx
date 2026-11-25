@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import confetti from 'canvas-confetti';
 import {
@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { sound } from '../utils/audio';
 import { leadService } from '../services/leadService';
+import { pixelService, InvestmentTier } from '../services/pixelService';
 import { LeadBottleneck, LeadNeed, LeadUrgency } from '../types/lead';
 
 interface LeadFunnelModalProps {
@@ -115,6 +116,38 @@ const URGENCIES: { id: LeadUrgency; label: string; desc: string; icon: any }[] =
   },
 ];
 
+const INVESTMENT_TIERS: {
+  id: InvestmentTier;
+  label: string;
+  desc: string;
+  badge: string;
+}[] = [
+  {
+    id: '1000_2500',
+    label: 'R$ 1.000 a R$ 2.500',
+    desc: 'Landing Page ou Site Profissional completo',
+    badge: 'MAIS COMUM',
+  },
+  {
+    id: '2500_5000',
+    label: 'R$ 2.500 a R$ 5.000',
+    desc: 'Site de Elite + Automação WhatsApp / Painel',
+    badge: 'ALTA ESCALA',
+  },
+  {
+    id: 'acima_5000',
+    label: 'Acima de R$ 5.000',
+    desc: 'Ecossistema completo sob medida + Integrações',
+    badge: 'VIP / EMPRESARIAL',
+  },
+  {
+    id: 'ate_500',
+    label: 'Até R$ 500 (Só pesquisando)',
+    desc: 'Ainda estou avaliando opções mais simples',
+    badge: 'INICIAL',
+  },
+];
+
 export default function LeadFunnelModal({
   isOpen,
   onClose,
@@ -125,6 +158,7 @@ export default function LeadFunnelModal({
   const [bottleneck, setBottleneck] = useState<LeadBottleneck>('ads_no_conversion');
   const [need, setNeed] = useState<LeadNeed>('combo_completo');
   const [urgency, setUrgency] = useState<LeadUrgency>('imediato');
+  const [investmentTier, setInvestmentTier] = useState<InvestmentTier>('1000_2500');
 
   // Contact inputs
   const [name, setName] = useState<string>('');
@@ -133,6 +167,13 @@ export default function LeadFunnelModal({
   const [problemDetails, setProblemDetails] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isCompleted, setIsCompleted] = useState<boolean>(false);
+  const [lastWhatsappUrl, setLastWhatsappUrl] = useState<string>('');
+
+  useEffect(() => {
+    if (isOpen) {
+      pixelService.trackInitiateCheckout('Abriu Funil de Qualificação', 1850);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -171,6 +212,7 @@ export default function LeadFunnelModal({
   const selectedBottleneckObj = BOTTLENECKS.find((b) => b.id === bottleneck);
   const selectedNeedObj = NEEDS.find((n) => n.id === need);
   const selectedUrgencyObj = URGENCIES.find((u) => u.id === urgency);
+  const selectedInvestmentObj = INVESTMENT_TIERS.find((i) => i.id === investmentTier);
 
   const getSolutionPitch = () => {
     switch (bottleneck) {
@@ -206,7 +248,7 @@ export default function LeadFunnelModal({
       // ignore
     }
 
-    const estimatedBudget =
+    const baseNeedBudget =
       need === 'landing_page'
         ? 1200
         : need === 'site_institucional'
@@ -215,11 +257,20 @@ export default function LeadFunnelModal({
         ? 2200
         : 2600;
 
+    const estimatedBudget =
+      investmentTier === 'acima_5000'
+        ? 5500
+        : investmentTier === '2500_5000'
+        ? Math.max(baseNeedBudget, 3200)
+        : investmentTier === 'ate_500'
+        ? 500
+        : Math.max(baseNeedBudget, 1850);
+
     const summary = `Gargalo: ${selectedBottleneckObj?.title}${
       problemDetails.trim() ? ` | Relato: "${problemDetails.trim()}"` : ''
     }. Solução 01 Web: ${getSolutionPitch()}`;
 
-    // 1. SAVE LEAD TO ADMIN PANEL (WITH AUTOMATIC AI SOLUTION ARCHITECT)
+    // 1. SAVE LEAD TO ADMIN PANEL (WITH AUTOMATIC AI SOLUTION ARCHITECT & LEAD PURO SUCO SCORING)
     const newLead = leadService.addLead({
       name: name.trim(),
       businessName: businessName.trim() || 'Não informado',
@@ -232,12 +283,14 @@ export default function LeadFunnelModal({
       needLabel: selectedNeedObj?.title || 'Combo Completo',
       urgency,
       urgencyLabel: selectedUrgencyObj?.label || 'Imediato',
+      investmentTier,
+      investmentRange: selectedInvestmentObj?.label || 'R$ 1.000 a R$ 2.500',
       budgetEstimate: estimatedBudget,
       source: 'funil_anuncio',
       diagnosticSummary: summary,
       notes: `Lead gerado pelo Funil de Qualificação.${
         problemDetails.trim() ? ` Problema descrito: "${problemDetails.trim()}".` : ''
-      } Necessidade: ${selectedNeedObj?.title}. Urgência: ${selectedUrgencyObj?.label}.`,
+      } Necessidade: ${selectedNeedObj?.title}. Urgência: ${selectedUrgencyObj?.label}. Investimento: ${selectedInvestmentObj?.label}.`,
     });
 
     setIsSubmitting(false);
@@ -253,12 +306,16 @@ export default function LeadFunnelModal({
         `⚠️ *Maior Dificuldade:* ${selectedBottleneckObj?.title}\n` +
         (problemDetails.trim() ? `📝 *Problema Descrito:* ${problemDetails.trim()}\n` : '') +
         `🛠️ *Necessidade:* ${selectedNeedObj?.title}\n` +
-        `⏱️ *Urgência:* ${selectedUrgencyObj?.label}\n\n` +
-        `🤖 *Solução IA Recomendada:* ${newLead.aiBlueprint?.recommendedSolution || summary}\n\n` +
-        `_Vim pelo funil de qualificação do site e gostaria de agilizar meu atendimento!_`
+        `⏱️ *Urgência:* ${selectedUrgencyObj?.label}\n` +
+        `💰 *Faixa de Investimento:* ${selectedInvestmentObj?.label}\n` +
+        (newLead.isPuroSuco ? `🔥 *Classificação:* LEAD QUALIFICADO PRIORITÁRIO\n` : '') +
+        `\n🤖 *Solução IA Recomendada:* ${newLead.aiBlueprint?.recommendedSolution || summary}` +
+        pixelService.formatUtmForWhatsApp() +
+        `\n\n_Vim pelo funil de qualificação do site e gostaria de agilizar meu atendimento!_`
     );
 
     const waUrl = `https://wa.me/5566999697087?text=${waText}`;
+    setLastWhatsappUrl(waUrl);
 
     // Open WhatsApp
     setTimeout(() => {
@@ -571,6 +628,52 @@ export default function LeadFunnelModal({
                   })}
                 </div>
 
+                {/* Qualificação de Investimento Planejado */}
+                <div className="space-y-2.5 pt-2 border-t border-white/10">
+                  <div>
+                    <h4 className="text-sm sm:text-base font-extrabold text-white font-heading">
+                      Qual faixa de investimento você planeja para esse projeto?
+                    </h4>
+                    <p className="text-[11px] text-slate-400">
+                      Assim já montamos a arquitetura certa pro retorno que sua empresa busca.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {INVESTMENT_TIERS.map((tier) => {
+                      const isSelected = investmentTier === tier.id;
+                      return (
+                        <button
+                          key={tier.id}
+                          type="button"
+                          onClick={() => {
+                            sound.playSelect();
+                            setInvestmentTier(tier.id);
+                          }}
+                          className={`p-3 rounded-xl text-left border transition-all cursor-pointer space-y-1 ${
+                            isSelected
+                              ? 'bg-emerald-500/15 border-emerald-400 shadow-md shadow-emerald-950/40 text-white'
+                              : 'bg-slate-900/60 border-white/5 hover:border-white/20 text-slate-300'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-[10px] font-mono font-bold text-cyan-300">
+                              {tier.badge}
+                            </span>
+                            {isSelected && (
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                            )}
+                          </div>
+                          <div className="text-xs sm:text-sm font-extrabold text-white">
+                            {tier.label}
+                          </div>
+                          <p className="text-[11px] text-slate-400 leading-snug">{tier.desc}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 <div className="pt-4 flex items-center justify-between">
                   <button
                     type="button"
@@ -787,7 +890,13 @@ export default function LeadFunnelModal({
                 <div className="space-y-3 pt-2">
                   <button
                     type="button"
-                    onClick={() => handleFinishAndSend()}
+                    onClick={() => {
+                      sound.playClick(950);
+                      pixelService.trackWhatsAppContact('Funil Diagnóstico (Botão Sucesso)');
+                      if (lastWhatsappUrl) {
+                        window.open(lastWhatsappUrl, '_blank', 'noopener,noreferrer');
+                      }
+                    }}
                     className="w-full inline-flex items-center justify-center gap-3 py-4 px-6 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-extrabold text-sm sm:text-base transition-all duration-200 cursor-pointer shadow-xl shadow-emerald-950/60"
                   >
                     <MessageCircle className="w-5 h-5 fill-slate-950 stroke-none" />

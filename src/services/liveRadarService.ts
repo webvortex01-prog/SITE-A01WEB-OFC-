@@ -3,6 +3,7 @@
 // Rastreia em tempo real quem está navegando no site, qual seção está olhando,
 // profundidade de scroll, cliques em projetos/nichos e eventos do Meta Pixel.
 // ============================================================================
+import { pixelService } from './pixelService';
 
 export interface LiveVisitorSession {
   sessionId: string;
@@ -264,14 +265,14 @@ export const liveRadarService = {
     });
   },
 
-  identifyVisitor(name?: string, whatsapp?: string): void {
+  identifyVisitor(name?: string, whatsapp?: string, pixelEvents?: string[]): void {
     this.upsertMySession({
       identifiedName: name || undefined,
       identifiedWhatsapp: whatsapp || undefined,
       intentLevel: 'CONVERTIDO',
       radarDistance: 14,
       lastInterest: `Identificado: ${name || 'Cliente'} (${whatsapp || ''})`,
-      pixelEventsFired: ['Lead', 'Contact'],
+      pixelEventsFired: pixelEvents && pixelEvents.length > 0 ? pixelEvents : ['Contact'],
     });
   },
 
@@ -294,22 +295,34 @@ export const liveRadarService = {
   startPageTelemetry(): () => void {
     if (typeof window === 'undefined') return () => {};
 
+    // Capture UTM campaign parameters from Meta Ads / Google Ads immediately
+    pixelService.captureUtmAttribution();
+
     // Initial ping
     this.upsertMySession({});
 
-    // 1. Timer every 3 seconds to update time on site
+    // 1. Timer every 3 seconds to update time on site + 30s Engagement micro-conversion
     const startTs = Date.now();
     const timer = window.setInterval(() => {
       const realSessions = this.getRealSessions();
       const mySid = this.getCurrentSessionId();
       const me = realSessions.find((s) => s.sessionId === mySid);
       const elapsedSec = (me?.secondsOnSite || 0) + 3;
+      const finalSec = elapsedSec || Math.round((Date.now() - startTs) / 1000);
+      let extraPixels: string[] | undefined;
+
+      if (finalSec >= 30) {
+        pixelService.trackEngagementMilestone('TimeOnSite30s');
+        extraPixels = ['TimeOnSite30s'];
+      }
+
       this.upsertMySession({
-        secondsOnSite: elapsedSec || Math.round((Date.now() - startTs) / 1000),
+        secondsOnSite: finalSec,
+        pixelEventsFired: extraPixels,
       });
     }, 3000);
 
-    // 2. Scroll listener for scroll depth & active section detection
+    // 2. Scroll listener for scroll depth, active section detection & real Intent micro-conversions
     let lastScrollUpdate = 0;
     const handleScroll = () => {
       const now = Date.now();
@@ -336,6 +349,21 @@ export const liveRadarService = {
         }
       }
 
+      const firedOnScroll: string[] = [];
+      if (depth >= 50) {
+        pixelService.trackEngagementMilestone('Engaged50');
+        pixelService.trackViewContent('Engajamento 50% da Página 01 WEB', 'Landing Page');
+        firedOnScroll.push('Engaged50', 'ViewContent');
+      }
+      if (depth >= 75) {
+        pixelService.trackEngagementMilestone('Engaged75');
+        firedOnScroll.push('Engaged75');
+      }
+      if (activeSecId === 'orcamento') {
+        pixelService.trackInitiateCheckout('Scroll até Simulador de Orçamento', 1850);
+        firedOnScroll.push('InitiateCheckout');
+      }
+
       const isHotSection =
         activeSecId === 'orcamento' ||
         activeSecId === 'prejuizo' ||
@@ -355,16 +383,17 @@ export const liveRadarService = {
           ? 'INTERESSADO'
           : 'EXPLORANDO',
         radarDistance: isHotSection ? 22 : isWarmSection ? 45 : 68,
+        pixelEventsFired: firedOnScroll.length > 0 ? firedOnScroll : undefined,
       });
     };
 
-    // 3. Delegated click listener to capture what buttons/projects the visitor clicks!
+    // 3. Delegated click listener to log local Radar clicks WITHOUT spamming Meta Pixel ViewContent!
     const handleClick = (e: MouseEvent) => {
       const target = (e.target as HTMLElement)?.closest('button, a');
       if (!target) return;
       const text = (target.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 65);
       if (!text || text.length < 2) return;
-      this.recordInteraction(`Clicou em: "${text}"`, 'ViewContent');
+      this.recordInteraction(`Clicou em: "${text}"`);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });

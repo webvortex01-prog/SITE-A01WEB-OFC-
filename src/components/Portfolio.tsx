@@ -30,6 +30,7 @@ import { sound } from '../utils/audio';
 import ProjectModal, { ProjectData } from './ProjectModal';
 import { Scroll3DStage } from '../utils/scrollytelling';
 import ScrollReactiveImage from './ScrollReactiveImage';
+import { pixelService } from '../services/pixelService';
 
 interface PortfolioProps {
   onSelectProjectForQuote: (name: string) => void;
@@ -414,6 +415,7 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
     device: 'desktop' | 'mobile' = 'desktop'
   ) => {
     sound.playSelect();
+    pixelService.trackViewContent(`Preview Projeto: ${project.title}`, project.categoryLabel);
     setInitialModalMode(mode);
     setInitialDeviceMode(device);
     setActiveModalProject(project);

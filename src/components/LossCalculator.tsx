@@ -14,6 +14,7 @@ import { calculateRevenueLeakage } from '../utils/calculator';
 import { sound } from '../utils/audio';
 import { leadService } from '../services/leadService';
 import { Scroll3DStage } from '../utils/scrollytelling';
+import { pixelService } from '../services/pixelService';
 
 export default function LossCalculator() {
   const [visitors, setVisitors] = useState<number>(1500);
@@ -30,11 +31,13 @@ export default function LossCalculator() {
   const handleVisitorChange = (val: number) => {
     setVisitors(val);
     sound.playClick(400 + val / 15);
+    pixelService.trackInitiateCheckout('Calculadora de Prejuízo', 1850);
   };
 
   const handleTicketChange = (val: number) => {
     setTicket(val);
     sound.playClick(350 + val / 5);
+    pixelService.trackInitiateCheckout('Calculadora de Prejuízo', 1850);
   };
 
   const handleSendRecoveryPlan = (e: React.FormEvent) => {
@@ -62,6 +65,8 @@ export default function LossCalculator() {
       needLabel: 'Estrutura de Alta Conversão + Automação WhatsApp',
       urgency: 'imediato',
       urgencyLabel: 'Imediato (esta semana)',
+      investmentTier: '1000_2500',
+      investmentRange: 'R$ 1.000 a R$ 2.500',
       budgetEstimate: 1850,
       source: 'calculadora_orcamento',
       diagnosticSummary: lossDescription,
@@ -81,8 +86,9 @@ export default function LossCalculator() {
         `💰 *Ticket Médio:* R$ ${ticket.toLocaleString('pt-BR')}\n` +
         `⚠️ *Vazamento Calculado:* R$ ${leakage.lostRevenueMonthly.toLocaleString('pt-BR')}/mês (~${leakage.lostLeadsMonthly} clientes perdidos)\n` +
         (quickProblem.trim() ? `📝 *Meu Caso:* ${quickProblem.trim()}\n` : '') +
-        `\n🤖 *Solução IA Recomendada:* ${savedLead.aiBlueprint?.recommendedSolution || 'Estrutura 01 WEB'}\n\n` +
-        `_Quero estancar esse prejuízo e montar minha estrutura com a 01 WEB!_`
+        `\n🤖 *Solução IA Recomendada:* ${savedLead.aiBlueprint?.recommendedSolution || 'Estrutura 01 WEB'}\n` +
+        pixelService.formatUtmForWhatsApp() +
+        `\n\n_Quero estancar esse prejuízo e montar minha estrutura com a 01 WEB!_`
     );
 
     setTimeout(() => {

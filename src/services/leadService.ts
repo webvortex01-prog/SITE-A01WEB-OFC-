@@ -10,6 +10,7 @@ import {
 } from '../types/lead';
 import { generateAiSolutionBlueprint } from './aiLeadArchitect';
 import { liveRadarService } from './liveRadarService';
+import { pixelService } from './pixelService';
 
 const STORAGE_KEY = '01web_leads_v3';
 const SETTINGS_KEY = '01web_agency_settings_v3';
@@ -27,15 +28,24 @@ const DEFAULT_SETTINGS: AgencySettings = {
 };
 
 export function calculateLeadScore(lead: Partial<Lead>): number {
-  let score = 45;
-  if (lead.urgency === 'imediato') score += 35;
-  else if (lead.urgency === '15_30_dias') score += 18;
-  else score += 5;
+  let score = 40;
+  if (lead.urgency === 'imediato') score += 30;
+  else if (lead.urgency === '15_30_dias') score += 16;
+  else score += 4;
 
-  if (lead.need === 'combo_completo') score += 20;
-  else if (lead.need === 'sistema_gestao') score += 15;
-  else if (lead.need === 'site_institucional') score += 10;
-  else score += 5;
+  if (lead.need === 'combo_completo') score += 16;
+  else if (lead.need === 'sistema_gestao') score += 12;
+  else if (lead.need === 'site_institucional') score += 8;
+  else score += 4;
+
+  if (lead.investmentTier === 'acima_5000') score += 20;
+  else if (lead.investmentTier === '2500_5000') score += 15;
+  else if (lead.investmentTier === '1000_2500') score += 8;
+
+  // Hard cap curious / low-budget leads to COLD so they NEVER train the Meta Pixel as HOT!
+  if (lead.investmentTier === 'ate_500' || lead.urgency === 'apenas_orcando') {
+    return Math.min(45, score);
+  }
 
   return Math.min(100, score);
 }
@@ -394,11 +404,30 @@ export const leadService = {
     }
   },
 
-  addLead(leadInput: Omit<Lead, 'id' | 'createdAt' | 'status'>): Lead {
+  addLead(
+    leadInput: Omit<Lead, 'id' | 'createdAt' | 'status'>,
+    options?: { isAbandoned?: boolean }
+  ): Lead {
     const leads = this.getLeads();
     const score = leadInput.score ?? calculateLeadScore(leadInput);
     const temperature = leadInput.temperature ?? deriveTemperature(score);
     const aiBlueprint = leadInput.aiBlueprint ?? generateAiSolutionBlueprint(leadInput);
+    const utmSummary = leadInput.utmSummary || pixelService.getUtmSummary() || undefined;
+
+    const pixelResult = pixelService.trackQualifiedLead({
+      name: leadInput.name,
+      whatsapp: leadInput.whatsapp,
+      segment: leadInput.segment,
+      needLabel: leadInput.needLabel,
+      urgency: leadInput.urgency,
+      investmentTier: leadInput.investmentTier,
+      budgetEstimate: leadInput.budgetEstimate,
+      score,
+      temperature,
+      source: leadInput.source,
+      isAbandoned: options?.isAbandoned,
+    });
+
     const newLead: Lead = {
       ...leadInput,
       id: `lead-${Date.now()}`,
@@ -407,6 +436,8 @@ export const leadService = {
       score,
       temperature,
       aiBlueprint,
+      utmSummary,
+      isPuroSuco: pixelResult.isPuroSuco,
       checklist: { ...DEFAULT_CHECKLIST, briefing: false },
       paidDeposit: false,
       paidFinal: false,
@@ -416,22 +447,7 @@ export const leadService = {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
       window.dispatchEvent(new CustomEvent(EVENT_NAME, { detail: newLead }));
-      liveRadarService.identifyVisitor(newLead.name, newLead.whatsapp);
-
-      // Disparo Automático de Eventos de Conversão para o Meta Pixel (1021802663562956)
-      if (typeof window !== 'undefined' && typeof (window as any).fbq === 'function') {
-        (window as any).fbq('track', 'Lead', {
-          content_name: newLead.needLabel,
-          content_category: newLead.segment,
-          value: newLead.budgetEstimate || 1850,
-          currency: 'BRL',
-          status: newLead.temperature,
-        });
-        (window as any).fbq('track', 'Contact', {
-          content_name: newLead.businessName,
-          content_category: newLead.segment,
-        });
-      }
+      liveRadarService.identifyVisitor(newLead.name, newLead.whatsapp, pixelResult.eventsFired);
     } catch (e) {
       console.error('Failed to save lead in localStorage', e);
     }
@@ -460,28 +476,31 @@ export const leadService = {
       return existing;
     }
 
-    return this.addLead({
-      name: (params.name || 'Visitante do Site').trim(),
-      businessName: params.segment || 'Capturado pelo Robô de Saída',
-      whatsapp: cleanPhone,
-      segment: params.segment || 'Interessado no Site 01 WEB',
-      bottleneck: 'ads_no_conversion',
-      bottleneckLabel: '🚨 Visualizou o Site e Não Finalizou (Recuperação)',
-      problemDetails:
-        params.contextNote ||
-        'Visitante visualizou o site / simulou valores e deixou o WhatsApp no gatilho de recuperação.',
-      need: 'combo_completo',
-      needLabel: 'Estrutura 01 WEB + Voucher Bônus R$ 1.030',
-      urgency: 'imediato',
-      urgencyLabel: 'Recuperação Imediata (Abandono)',
-      budgetEstimate: params.budgetEstimate || 1850,
-      temperature: 'HOT',
-      score: 97,
-      source: 'funil_anuncio',
-      diagnosticSummary:
-        'Lead capturado pelo Gatilho de Intenção de Saída / Abandono. Chamar com o Script do Robô de Recuperação!',
-      notes: `🚨 LEAD DE RECUPERAÇÃO: ${params.contextNote || 'Visualizou o site e deixou o contato.'}`,
-    });
+    return this.addLead(
+      {
+        name: (params.name || 'Visitante do Site').trim(),
+        businessName: params.segment || 'Capturado pelo Robô de Saída',
+        whatsapp: cleanPhone,
+        segment: params.segment || 'Interessado no Site 01 WEB',
+        bottleneck: 'ads_no_conversion',
+        bottleneckLabel: '🚨 Visualizou o Site e Não Finalizou (Recuperação)',
+        problemDetails:
+          params.contextNote ||
+          'Visitante visualizou o site / simulou valores e deixou o WhatsApp no gatilho de recuperação.',
+        need: 'combo_completo',
+        needLabel: 'Estrutura 01 WEB + Voucher Bônus R$ 1.030',
+        urgency: 'imediato',
+        urgencyLabel: 'Recuperação Imediata (Abandono)',
+        budgetEstimate: params.budgetEstimate || 1850,
+        temperature: 'HOT',
+        score: 97,
+        source: 'funil_anuncio',
+        diagnosticSummary:
+          'Lead capturado pelo Gatilho de Intenção de Saída / Abandono. Chamar com o script do Robô de Recuperação!',
+        notes: `🚨 LEAD DE RECUPERAÇÃO: ${params.contextNote || 'Visualizou o site e deixou o contato.'}`,
+      },
+      { isAbandoned: true }
+    );
   },
 
   regenerateLeadAiBlueprint(id: string, customInstruction?: string): Lead | null {
