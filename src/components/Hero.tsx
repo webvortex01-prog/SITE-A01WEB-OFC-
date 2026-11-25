@@ -48,17 +48,16 @@ export default function Hero({ onOpenFunnel }: HeroProps) {
   });
 
   // Full-screen background parallax zoom & 3D camera movement on scroll
-  const beforeBgScale = useTransform(smoothScroll, [0, 0.6, 1], [1.02, 1.14, 1.18]);
-  const afterBgScale = useTransform(smoothScroll, [0, 0.4, 1], [1.16, 1.05, 1.0]);
-  const textParallaxY = useTransform(smoothScroll, [0, 0.5, 1], [0, -14, -24]);
-  const hudFloatY = useTransform(smoothScroll, [0, 0.5, 1], [18, 0, -16]);
+  const beforeBgScale = useTransform(smoothScroll, [0, 0.6, 1], [1.01, 1.08, 1.12]);
+  const afterBgScale = useTransform(smoothScroll, [0, 0.4, 1], [1.1, 1.03, 1.0]);
+  const textParallaxY = useTransform(smoothScroll, [0, 0.5, 1], [0, -10, -18]);
+  const hudFloatY = useTransform(smoothScroll, [0, 0.5, 1], [12, 0, -12]);
 
   useMotionValueEvent(smoothScroll, 'change', (v) => {
     if (v <= 0.02 && isManualControl && !isDragging) {
       setIsManualControl(false);
     }
     if (!isManualControl) {
-      // Smoothly scrub from 0% to 100% as user scrolls down the Hero track
       const normalized = Math.max(0, Math.min(1, (v - 0.02) / 0.78));
       setRevealPercent(Math.round(normalized * 100));
     }
@@ -83,14 +82,11 @@ export default function Hero({ onOpenFunnel }: HeroProps) {
     >
       {/* =====================================================================
           FULL-SCREEN (100vw x 100vh) STICKY CINEMA VIEWPORT
-          The photo is 100% edge-to-edge full-screen background, with 3D glass
-          typography, neon shockwave laser & floating holograms on top!
          ===================================================================== */}
       <div
         ref={stageRef}
         onPointerDown={(e) => {
-          // Only start drag if user didn't click an interactive button or link
-          if ((e.target as HTMLElement).closest('button, a')) return;
+          if ((e.target as HTMLElement).closest('button, a, input')) return;
           e.currentTarget.setPointerCapture(e.pointerId);
           setIsDragging(true);
           updateFromClientX(e.clientX);
@@ -114,6 +110,8 @@ export default function Hero({ onOpenFunnel }: HeroProps) {
       >
         {/* ===================================================================
             BACKGROUND LAYER 1 (z-10): FULL-SCREEN "ANTES" (CAOS & SITE FEIO)
+            Left side kept CLEAR & BRIGHT so the monitor "SITE FEIO" and the
+            stressed businessman's face are 100% visible!
            =================================================================== */}
         <div className="absolute inset-0 z-10 overflow-hidden bg-[#080508]">
           <motion.img
@@ -123,33 +121,27 @@ export default function Hero({ onOpenFunnel }: HeroProps) {
             className="w-full h-full object-cover object-center pointer-events-none will-change-transform"
           />
 
-          {/* Cinematic Moody Dark & Crimson Atmospheric Overlays for Text Contrast */}
+          {/* Subtle gradient: transparent on the Left (where the guy's face & monitor are!), darker on the Right (where the text card sits!) */}
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
               background:
-                'linear-gradient(90deg, rgba(6,5,10,0.84) 0%, rgba(10,6,12,0.45) 45%, rgba(15,6,10,0.72) 100%)',
+                'linear-gradient(90deg, rgba(6,5,10,0.12) 0%, rgba(10,6,12,0.18) 45%, rgba(10,5,10,0.82) 100%)',
             }}
           />
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
               background:
-                'linear-gradient(180deg, rgba(6,8,15,0.75) 0%, transparent 28%, rgba(6,8,15,0.45) 65%, rgba(6,8,15,0.96) 100%)',
-            }}
-          />
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background:
-                'radial-gradient(circle at 75% 30%, rgba(244, 63, 94, 0.22), transparent 55%)',
+                'linear-gradient(180deg, rgba(6,8,15,0.55) 0%, transparent 22%, transparent 72%, rgba(6,8,15,0.92) 100%)',
             }}
           />
         </div>
 
         {/* ===================================================================
             BACKGROUND LAYER 2 (z-20): FULL-SCREEN "DEPOIS" (A01 WEB PATRÃO FELIZ)
-            Sweeps across the entire 100vw x 100vh screen via scroll or drag!
+            Right side kept CLEAR & BRIGHT so the smiling businessman in the suit
+            is 100% visible!
            =================================================================== */}
         <div
           className="absolute inset-0 z-20 overflow-hidden bg-[#040B14]"
@@ -165,26 +157,19 @@ export default function Hero({ onOpenFunnel }: HeroProps) {
             className="w-full h-full object-cover object-center pointer-events-none will-change-transform"
           />
 
-          {/* Cinematic Luxury Dark-Neon Edge Vignette so White/Neon Typography Pops Over the Bright Office! */}
+          {/* Subtle gradient: darker on the Left (where the Phase 2 text card sits), completely clear on the Right (where the smiling businessman's face is!) */}
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
               background:
-                'linear-gradient(90deg, rgba(4,9,18,0.82) 0%, rgba(6,14,26,0.32) 48%, rgba(4,12,20,0.68) 100%)',
+                'linear-gradient(90deg, rgba(4,9,18,0.78) 0%, rgba(6,14,26,0.22) 50%, rgba(4,12,20,0.10) 100%)',
             }}
           />
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
               background:
-                'linear-gradient(180deg, rgba(6,8,15,0.72) 0%, transparent 26%, rgba(6,10,20,0.38) 65%, rgba(6,8,15,0.96) 100%)',
-            }}
-          />
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background:
-                'radial-gradient(circle at 25% 40%, rgba(34, 211, 238, 0.22), transparent 55%)',
+                'linear-gradient(180deg, rgba(6,8,15,0.55) 0%, transparent 22%, transparent 72%, rgba(6,8,15,0.92) 100%)',
             }}
           />
         </div>
@@ -196,22 +181,24 @@ export default function Hero({ onOpenFunnel }: HeroProps) {
           className="absolute inset-y-0 -ml-8 w-16 flex items-center justify-center pointer-events-none z-30"
           style={{ left: `${revealPercent}%` }}
         >
-          {/* Wide Neon Aura Glow */}
           <div className="absolute inset-y-0 w-10 bg-gradient-to-r from-transparent via-cyan-400/35 to-transparent blur-md" />
-          {/* Core Laser Line */}
           <div className="absolute inset-y-0 w-[3px] bg-gradient-to-b from-cyan-300 via-emerald-400 to-cyan-300 shadow-[0_0_30px_6px_rgba(34,211,238,0.95)]" />
-          {/* Center Interactive Orb */}
           <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-400 to-emerald-400 text-slate-950 flex items-center justify-center shadow-[0_0_35px_rgba(34,211,238,1)] border-2 border-white">
             <ArrowLeftRight className="w-5 h-5 stroke-[2.5]" />
           </div>
         </div>
 
         {/* ===================================================================
-            FOREGROUND LAYER (z-40): GIANT 3D TYPOGRAPHY & HOLOGRAPHIC CARDS
-            FLOATING DIRECTLY OVER THE FULL-SCREEN IMAGE!
+            FOREGROUND LAYER (z-40): DYNAMIC LEFT <-> RIGHT SWAP
+            - In FASE 01 (Antes / Site Feio):
+              * Small Red Diagnostic Card is on the BOTTOM-LEFT
+              * Big Headline Box is on the RIGHT (leaving the guy's face & "SITE FEIO" monitor 100% uncovered on the left!)
+            - In FASE 02 (Depois / Site Bonito A01 WEB):
+              * Big Headline Box swaps to the LEFT
+              * Small Green Bot Card swaps to the BOTTOM-RIGHT (leaving the smiling businessman's face 100% uncovered on the right!)
            =================================================================== */}
-        <div className="relative z-40 w-full h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-6 flex flex-col justify-between pointer-events-none">
-          {/* TOP ROW: Floating Phase Switcher & Scroll Progress Pill Over the Image */}
+        <div className="relative z-40 w-full h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-5 flex flex-col justify-between pointer-events-none">
+          {/* TOP ROW: Floating Phase Status & Quick-Jump Pills */}
           <div className="flex flex-wrap items-center justify-between gap-3 pointer-events-auto">
             <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-[#060913]/80 backdrop-blur-xl border border-white/15 shadow-2xl">
               <span
@@ -228,7 +215,6 @@ export default function Hero({ onOpenFunnel }: HeroProps) {
               </span>
             </div>
 
-            {/* Interactive Quick-Jump Pills Floating Over Top-Right of Image */}
             <div className="inline-flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#060913]/85 backdrop-blur-xl border border-white/20 shadow-2xl">
               <button
                 type="button"
@@ -279,25 +265,57 @@ export default function Hero({ onOpenFunnel }: HeroProps) {
           </div>
 
           {/* =================================================================
-              MIDDLE ROW: GIANT CINEMATIC TYPOGRAPHY + FLOATING 3D HOLOGRAMS
-              Positioned so the monitor & businessman in the background remain
-              visibly framed while the text floats with 3D glass & neon glow!
+              MIDDLE ROW: DYNAMIC SIDE-SWAPPING LAYOUT!
+              - When !isAfterPhase (ANTES):
+                Left Col (col-span-6) = Small Diagnostic Pill at bottom-left (Guy's face & monitor above it are 100% FREE!)
+                Right Col (col-span-6) = Big Headline Card on the Right!
+              - When isAfterPhase (DEPOIS A01 WEB):
+                Left Col (col-span-6) = Big Headline Card on the Left!
+                Right Col (col-span-6) = Small Bot Pill at bottom-right (Smiling Boss's face above it is 100% FREE!)
              ================================================================= */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end my-auto">
-            {/* Left Floating Glassmorphic Headline Block */}
-            <motion.div
-              style={{ y: textParallaxY }}
-              className="lg:col-span-7 space-y-4 p-5 sm:p-7 rounded-3xl bg-[#050811]/65 backdrop-blur-md border border-white/15 shadow-[0_25px_80px_rgba(0,0,0,0.75)] pointer-events-auto"
-            >
-              <AnimatePresence mode="wait">
-                {!isAfterPhase ? (
+          <div className="my-auto w-full">
+            <AnimatePresence mode="wait">
+              {!isAfterPhase ? (
+                /* -------------------------------------------------------------
+                   FASE 01 (ANTES): SMALL CARD ON LEFT, BIG HEADLINE ON RIGHT!
+                   ------------------------------------------------------------- */
+                <motion.div
+                  key="layout-before-phase"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -16 }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                  className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end"
+                >
+                  {/* LEFT SIDE (col-span-6): Kept open at top/center so guy's face & monitor show 100%! Only compact badge at bottom-left */}
                   <motion.div
-                    key="hero-copy-before"
-                    initial={{ opacity: 0, y: 14, filter: 'blur(6px)' }}
-                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                    exit={{ opacity: 0, y: -14, filter: 'blur(6px)' }}
-                    transition={{ duration: 0.28 }}
-                    className="space-y-3"
+                    style={{ y: hudFloatY }}
+                    className="lg:col-span-6 flex flex-col items-start justify-end pointer-events-auto order-2 lg:order-1"
+                  >
+                    <div className="w-full max-w-sm p-4 rounded-2xl bg-rose-950/85 backdrop-blur-xl border border-rose-500/50 shadow-2xl space-y-1.5">
+                      <div className="flex items-center justify-between text-[11px] font-mono text-rose-300 font-extrabold">
+                        <span className="flex items-center gap-1.5">
+                          <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
+                          DIAGNÓSTICO SEM A 01 WEB
+                        </span>
+                        <span className="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300">
+                          CRÍTICO
+                        </span>
+                      </div>
+                      <div className="text-xs sm:text-sm font-bold text-white">
+                        ❌ 84% fecham o site antes de carregar
+                      </div>
+                      <p className="text-[11px] text-rose-200/90 leading-snug">
+                        Você paga pelo clique no anúncio, mas o cliente desiste ou fica esperando
+                        resposta manual no WhatsApp.
+                      </p>
+                    </div>
+                  </motion.div>
+
+                  {/* RIGHT SIDE (col-span-6): BIG HEADLINE CARD ON THE RIGHT */}
+                  <motion.div
+                    style={{ y: textParallaxY }}
+                    className="lg:col-span-6 space-y-3.5 p-5 sm:p-6 rounded-3xl bg-[#050811]/75 backdrop-blur-md border border-rose-500/30 shadow-[0_25px_80px_rgba(0,0,0,0.8)] pointer-events-auto order-1 lg:order-2"
                   >
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs font-mono font-extrabold">
                       <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
@@ -305,8 +323,8 @@ export default function Hero({ onOpenFunnel }: HeroProps) {
                     </div>
 
                     <h1
-                      className="font-extrabold font-heading tracking-tight text-white leading-[1.04] drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)]"
-                      style={{ fontSize: 'clamp(1.85rem, 3.6vw, 3.25rem)' }}
+                      className="font-extrabold font-heading tracking-tight text-white leading-[1.05] drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)]"
+                      style={{ fontSize: 'clamp(1.75rem, 3.1vw, 2.85rem)' }}
                     >
                       Site Feio e Atendimento Lento Estão{' '}
                       <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-amber-300 to-rose-500 drop-shadow-[0_0_25px_rgba(244,63,94,0.55)]">
@@ -314,7 +332,7 @@ export default function Hero({ onOpenFunnel }: HeroProps) {
                       </span>
                     </h1>
 
-                    <p className="text-slate-200 text-xs sm:text-base leading-relaxed drop-shadow">
+                    <p className="text-slate-200 text-xs sm:text-sm leading-relaxed drop-shadow">
                       Quando o cliente clica no seu anúncio e encontra uma página amadora ou demora
                       para ser atendido no WhatsApp, você perde a venda em segundos.{' '}
                       <strong className="text-cyan-300 underline decoration-cyan-400/60">
@@ -323,15 +341,60 @@ export default function Hero({ onOpenFunnel }: HeroProps) {
                       e veja o que a <strong className="text-white">01 WEB</strong> faz pela sua
                       empresa:
                     </p>
+
+                    <div className="pt-1 flex flex-wrap items-center gap-2">
+                      {onOpenFunnel && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            sound.playClick(950);
+                            onOpenFunnel();
+                          }}
+                          className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-cyan-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 font-extrabold text-xs sm:text-sm whitespace-nowrap cursor-pointer shadow-[0_0_25px_rgba(34,211,238,0.45)] transition-transform hover:scale-[1.02]"
+                        >
+                          <Sparkles className="w-4 h-4 text-slate-950 shrink-0" />
+                          <span>Quero Organizar Minha Empresa Agora</span>
+                          <ArrowRight className="w-4 h-4 text-slate-950 shrink-0" />
+                        </button>
+                      )}
+
+                      <a
+                        href="#portfolio"
+                        onClick={() => sound.playClick(900)}
+                        className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/25 font-bold text-xs whitespace-nowrap cursor-pointer transition-all"
+                      >
+                        <Layers className="w-4 h-4 text-cyan-400 shrink-0" />
+                        <span>Ver 6 Projetos Ao Vivo</span>
+                      </a>
+
+                      <a
+                        href="#orcamento"
+                        onClick={() => sound.playSelect()}
+                        className="inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl bg-[#060913]/85 hover:bg-[#0B1224] text-cyan-300 border border-cyan-400/40 font-bold text-xs whitespace-nowrap cursor-pointer transition-all"
+                      >
+                        <Calculator className="w-4 h-4 text-cyan-400 shrink-0" />
+                        <span>Simular Orçamento</span>
+                      </a>
+                    </div>
                   </motion.div>
-                ) : (
+                </motion.div>
+              ) : (
+                /* -------------------------------------------------------------
+                   FASE 02 (DEPOIS A01 WEB): BIG HEADLINE ON LEFT, SMALL BOT CARD ON RIGHT!
+                   Leaves the smiling businessman's face on the right 100% visible!
+                   ------------------------------------------------------------- */
+                <motion.div
+                  key="layout-after-phase"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -16 }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                  className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end"
+                >
+                  {/* LEFT SIDE (col-span-6): BIG HEADLINE CARD ON THE LEFT */}
                   <motion.div
-                    key="hero-copy-after"
-                    initial={{ opacity: 0, y: 14, filter: 'blur(6px)' }}
-                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                    exit={{ opacity: 0, y: -14, filter: 'blur(6px)' }}
-                    transition={{ duration: 0.28 }}
-                    className="space-y-3"
+                    style={{ y: textParallaxY }}
+                    className="lg:col-span-6 space-y-3.5 p-5 sm:p-6 rounded-3xl bg-[#050811]/78 backdrop-blur-md border border-cyan-400/45 shadow-[0_25px_80px_rgba(0,0,0,0.8)] pointer-events-auto"
                   >
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-400/20 border border-emerald-400/50 text-emerald-300 text-xs font-mono font-extrabold">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
@@ -339,8 +402,8 @@ export default function Hero({ onOpenFunnel }: HeroProps) {
                     </div>
 
                     <h1
-                      className="font-extrabold font-heading tracking-tight text-white leading-[1.04] drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)]"
-                      style={{ fontSize: 'clamp(1.85rem, 3.6vw, 3.25rem)' }}
+                      className="font-extrabold font-heading tracking-tight text-white leading-[1.05] drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)]"
+                      style={{ fontSize: 'clamp(1.75rem, 3.1vw, 2.85rem)' }}
                     >
                       Empresa Organizada,{' '}
                       <span className="text-gradient-animated drop-shadow-[0_0_25px_rgba(34,211,238,0.5)]">
@@ -348,97 +411,56 @@ export default function Hero({ onOpenFunnel }: HeroProps) {
                       </span>
                     </h1>
 
-                    <p className="text-slate-100 text-xs sm:text-base leading-relaxed drop-shadow">
+                    <p className="text-slate-100 text-xs sm:text-sm leading-relaxed drop-shadow">
                       Na <strong className="text-cyan-300">01 WEB</strong>, substituímos o caos por
                       uma estrutura completa pronta em{' '}
                       <strong className="text-emerald-300">3 a 7 dias</strong>: design
                       Scrollytelling que impõe autoridade, triagem automática 24h no WhatsApp e
                       painel próprio sem mensalidade.
                     </p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
 
-              {/* CTA Buttons Floating Directly Inside the Glass Overlay */}
-              <div className="pt-2 flex flex-wrap items-center gap-2.5">
-                {onOpenFunnel && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      sound.playClick(950);
-                      onOpenFunnel();
-                    }}
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-cyan-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 font-extrabold text-xs sm:text-sm whitespace-nowrap cursor-pointer shadow-[0_0_30px_rgba(34,211,238,0.45)] transition-transform hover:scale-[1.02]"
-                  >
-                    <Sparkles className="w-4 h-4 text-slate-950 shrink-0" />
-                    <span>Quero Organizar Minha Empresa Agora</span>
-                    <ArrowRight className="w-4 h-4 text-slate-950 shrink-0" />
-                  </button>
-                )}
+                    <div className="pt-1 flex flex-wrap items-center gap-2">
+                      {onOpenFunnel && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            sound.playClick(950);
+                            onOpenFunnel();
+                          }}
+                          className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-cyan-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 font-extrabold text-xs sm:text-sm whitespace-nowrap cursor-pointer shadow-[0_0_25px_rgba(34,211,238,0.45)] transition-transform hover:scale-[1.02]"
+                        >
+                          <Sparkles className="w-4 h-4 text-slate-950 shrink-0" />
+                          <span>Quero Organizar Minha Empresa Agora</span>
+                          <ArrowRight className="w-4 h-4 text-slate-950 shrink-0" />
+                        </button>
+                      )}
 
-                <a
-                  href="#portfolio"
-                  onClick={() => sound.playClick(900)}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/25 font-bold text-xs sm:text-sm whitespace-nowrap cursor-pointer transition-all"
-                >
-                  <Layers className="w-4 h-4 text-cyan-400 shrink-0" />
-                  <span>Ver 6 Projetos Ao Vivo</span>
-                </a>
+                      <a
+                        href="#portfolio"
+                        onClick={() => sound.playClick(900)}
+                        className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/25 font-bold text-xs whitespace-nowrap cursor-pointer transition-all"
+                      >
+                        <Layers className="w-4 h-4 text-cyan-400 shrink-0" />
+                        <span>Ver 6 Projetos Ao Vivo</span>
+                      </a>
 
-                <a
-                  href="#orcamento"
-                  onClick={() => sound.playSelect()}
-                  className="inline-flex items-center justify-center gap-1.5 px-4 py-3.5 rounded-xl bg-[#060913]/85 hover:bg-[#0B1224] text-cyan-300 border border-cyan-400/40 font-bold text-xs sm:text-sm whitespace-nowrap cursor-pointer transition-all"
-                >
-                  <Calculator className="w-4 h-4 text-cyan-400 shrink-0" />
-                  <span>Simular Orçamento</span>
-                </a>
-              </div>
-            </motion.div>
-
-            {/* Right Column: Floating 3D Holographic Notifications Over the Photo */}
-            <motion.div
-              style={{ y: hudFloatY }}
-              className="lg:col-span-5 flex flex-col items-end space-y-3 pointer-events-auto"
-            >
-              <AnimatePresence mode="wait">
-                {!isAfterPhase ? (
-                  <motion.div
-                    key="hud-before-cards"
-                    initial={{ opacity: 0, x: 24 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 24 }}
-                    transition={{ duration: 0.25 }}
-                    className="w-full max-w-sm space-y-2.5"
-                  >
-                    <div className="p-4 rounded-2xl bg-rose-950/80 backdrop-blur-xl border border-rose-500/50 shadow-2xl space-y-1.5">
-                      <div className="flex items-center justify-between text-[11px] font-mono text-rose-300 font-extrabold">
-                        <span className="flex items-center gap-1.5">
-                          <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
-                          DIAGNÓSTICO SEM A 01 WEB
-                        </span>
-                        <span>CRÍTICO</span>
-                      </div>
-                      <div className="text-xs sm:text-sm font-bold text-white">
-                        ❌ 84% fecham o site antes de carregar
-                      </div>
-                      <p className="text-[11px] text-rose-200/90">
-                        Você paga pelo clique no anúncio, mas o cliente desiste ou fica esperando
-                        resposta manual no WhatsApp.
-                      </p>
+                      <a
+                        href="#orcamento"
+                        onClick={() => sound.playSelect()}
+                        className="inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl bg-[#060913]/85 hover:bg-[#0B1224] text-cyan-300 border border-cyan-400/40 font-bold text-xs whitespace-nowrap cursor-pointer transition-all"
+                      >
+                        <Calculator className="w-4 h-4 text-cyan-400 shrink-0" />
+                        <span>Simular Orçamento</span>
+                      </a>
                     </div>
                   </motion.div>
-                ) : (
+
+                  {/* RIGHT SIDE (col-span-6): Kept open at top/center so the smiling businessman's face is 100% FREE! Compact Bot HUD at bottom-right */}
                   <motion.div
-                    key="hud-after-cards"
-                    initial={{ opacity: 0, x: 24 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 24 }}
-                    transition={{ duration: 0.25 }}
-                    className="w-full max-w-sm space-y-2.5"
+                    style={{ y: hudFloatY }}
+                    className="lg:col-span-6 flex flex-col items-end justify-end space-y-2 pointer-events-auto"
                   >
-                    {/* Floating Live WhatsApp Bot Notification Card */}
-                    <div className="p-4 rounded-2xl bg-[#05141C]/85 backdrop-blur-xl border border-emerald-400/60 shadow-[0_15px_50px_rgba(16,185,129,0.3)] space-y-1.5">
+                    <div className="w-full max-w-sm p-3.5 rounded-2xl bg-[#05141C]/88 backdrop-blur-xl border border-emerald-400/60 shadow-[0_15px_50px_rgba(16,185,129,0.3)] space-y-1">
                       <div className="flex items-center justify-between text-[11px] font-mono text-emerald-300 font-extrabold">
                         <span className="flex items-center gap-1.5">
                           <Bot className="w-4 h-4 text-emerald-400" />
@@ -452,41 +474,21 @@ export default function Hero({ onOpenFunnel }: HeroProps) {
                         <MessageSquare className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
                         <span>&ldquo;Novo Cliente Qualificado & Pronto p/ Fechar!&rdquo;</span>
                       </div>
-                      <p className="text-[11px] text-slate-200">
+                      <p className="text-[11px] text-slate-200 leading-snug">
                         O robô atendeu em 2 segundos, filtrou o interesse e já entregou o pedido
                         mastigado no seu celular.
                       </p>
                     </div>
-
-                    {/* Floating Performance Telemetry Card */}
-                    <div className="p-3.5 rounded-2xl bg-[#060B18]/85 backdrop-blur-xl border border-cyan-400/50 shadow-2xl flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 rounded-xl bg-cyan-400 text-slate-950 flex items-center justify-center font-extrabold">
-                          <TrendingUp className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <div className="text-xs font-extrabold text-white">
-                            100/100 Google PageSpeed
-                          </div>
-                          <div className="text-[11px] font-mono text-cyan-300">
-                            Código 100% Seu · Zero Mensalidade
-                          </div>
-                        </div>
-                      </div>
-                      <span className="text-xs font-mono font-extrabold text-emerald-400">
-                        &lt; 0.8s
-                      </span>
-                    </div>
                   </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* =================================================================
               BOTTOM ROW: FLOATING GLASS SCROLL SCRUBBER BAR OVER THE IMAGE
              ================================================================= */}
-          <div className="p-3 sm:px-5 sm:py-3 rounded-2xl bg-[#050811]/80 backdrop-blur-xl border border-white/15 flex flex-wrap items-center justify-between gap-3 pointer-events-auto shadow-2xl">
+          <div className="p-3 sm:px-5 sm:py-2.5 rounded-2xl bg-[#050811]/80 backdrop-blur-xl border border-white/15 flex flex-wrap items-center justify-between gap-3 pointer-events-auto shadow-2xl">
             <div className="flex items-center gap-2 text-xs font-mono">
               <Zap className="w-4 h-4 text-cyan-400 shrink-0" />
               <span className="text-slate-200 font-bold">
@@ -497,7 +499,6 @@ export default function Hero({ onOpenFunnel }: HeroProps) {
               </span>
             </div>
 
-            {/* Interactive Range Scrubber */}
             <div className="flex-1 max-w-md mx-2 hidden sm:flex items-center gap-3">
               <span className="text-[10px] font-mono text-rose-400 font-bold">CAOS</span>
               <input
