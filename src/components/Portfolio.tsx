@@ -61,7 +61,6 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
   const progressBarScaleX = useTransform(smoothTheaterProgress, [0, 1], [0.08, 1]);
 
   useMotionValueEvent(theaterProgress, 'change', (v) => {
-    if (typeof window !== 'undefined' && window.innerWidth < 1024) return;
     let nextStage = 0;
     if (v < 0.23) nextStage = 0;
     else if (v < 0.5) nextStage = 1;
@@ -75,7 +74,7 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
     sound.playSelect();
     setSpotlightStage(stageIndex);
     const el = theaterTrackRef.current;
-    if (!el || window.innerWidth < 1024) return;
+    if (!el) return;
     const rect = el.getBoundingClientRect();
     const trackTop = rect.top + window.scrollY;
     const scrollable = Math.max(0, el.offsetHeight - window.innerHeight);
@@ -483,8 +482,8 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
             Beat 2: POW! Project #02 (GRV Motors) full-screen spotlight
             Beat 3: POW! Project #03 (Studio Six) full-screen spotlight
            ===================================================================== */}
-        <div ref={theaterTrackRef} className="relative lg:min-h-[390vh] py-12 lg:py-0">
-          <div className="lg:sticky lg:top-15 lg:py-3 flex flex-col justify-center space-y-3">
+        <div ref={theaterTrackRef} className="relative min-h-[330vh] lg:min-h-[390vh] py-4 lg:py-0">
+          <div className="sticky top-16 lg:top-15 py-2 lg:py-3 flex flex-col justify-center space-y-2.5 lg:space-y-3">
             {/* Top Theater HUD Bar (Works on Scroll AND Click) */}
             <div className="relative z-20 lg:static flex flex-wrap items-center justify-between gap-2.5 p-2.5 sm:px-4 sm:py-2.5 rounded-2xl bg-[#0B0F1A]/95 backdrop-blur-xl border border-cyan-400/30 shadow-2xl">
               <div className="flex items-center gap-2.5 text-xs font-mono">
@@ -555,24 +554,24 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
                     animate={{ opacity: 1, y: 0, scale: 1, rotateX: 0 }}
                     exit={{ opacity: 0, y: -28, scale: 0.94, rotateX: -8 }}
                     transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                    className="w-full rounded-3xl p-5 sm:p-7 lg:p-8 bg-gradient-to-br from-[#0B1224] via-[#070B14] to-[#09171B] border-2 border-cyan-400/40 shadow-[0_25px_90px_-20px_rgba(34,211,238,0.28)] relative overflow-hidden"
+                    className="w-full rounded-3xl p-4 sm:p-7 lg:p-8 bg-gradient-to-br from-[#0B1224] via-[#070B14] to-[#09171B] border-2 border-cyan-400/40 shadow-[0_25px_90px_-20px_rgba(34,211,238,0.28)] relative overflow-hidden"
                   >
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center relative z-10">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8 items-center relative z-10">
                       {/* Left Column: Impactful Manifesto Copy */}
-                      <div className="lg:col-span-7 space-y-3.5">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-400/15 border border-cyan-400/40 text-cyan-300 text-xs font-mono font-bold">
-                          <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                      <div className="lg:col-span-7 space-y-2.5 lg:space-y-3.5">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-400/15 border border-cyan-400/40 text-cyan-300 text-[10px] sm:text-xs font-mono font-bold">
+                          <Sparkles className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
                           <span>01. ENGENHARIA VISUAL & PROJETOS DE ELITE</span>
                         </div>
 
-                        <h2 className="text-2xl sm:text-4xl font-extrabold font-heading text-white tracking-tight leading-[1.08]">
+                        <h2 className="text-xl sm:text-4xl font-extrabold font-heading text-white tracking-tight leading-[1.08]">
                           Não Criamos &ldquo;Sites Comuns&rdquo;.{' '}
                           <span className="text-gradient-animated">
                             Entregamos Máquinas Digitais Que Dominam o Seu Nicho.
                           </span>
                         </h2>
 
-                        <p className="text-slate-200 text-xs sm:text-sm leading-relaxed">
+                        <p className="text-slate-200 text-[11.5px] sm:text-sm leading-snug sm:leading-relaxed">
                           Cada projeto que sai da <strong className="text-white">01 WEB</strong> é
                           construído em código puro de alta velocidade, com animações imersivas que
                           prendem o cliente nos primeiros 3 segundos e direcionam o pedido mastigado
@@ -580,7 +579,7 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
                         </p>
 
                         {/* 4 Pillars of What We Deliver */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-0.5">
+                        <div className="grid grid-cols-2 gap-2 sm:gap-2.5 pt-0.5">
                           {[
                             {
                               title: 'Visual Padrão Awwwards / Apple',
@@ -601,36 +600,36 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
                           ].map((pillar) => (
                             <div
                               key={pillar.title}
-                              className="p-2.5 sm:p-3 rounded-xl bg-[#060913]/90 border border-white/10 space-y-0.5"
+                              className="p-2 sm:p-3 rounded-xl bg-[#060913]/90 border border-white/10 space-y-0.5"
                             >
-                              <div className="text-xs font-extrabold text-cyan-300 flex items-center gap-1.5">
+                              <div className="text-[11px] sm:text-xs font-extrabold text-cyan-300 flex items-center gap-1.5 leading-tight">
                                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                                 <span>{pillar.title}</span>
                               </div>
-                              <p className="text-[11px] text-slate-400 leading-snug">
+                              <p className="hidden sm:block text-[11px] text-slate-400 leading-snug">
                                 {pillar.desc}
                               </p>
                             </div>
                           ))}
                         </div>
 
-                        <div className="pt-1 flex flex-wrap items-center gap-3">
+                        <div className="pt-0.5 lg:pt-1 flex flex-wrap items-center gap-2 sm:gap-3">
                           <button
                             type="button"
                             onClick={() => jumpToTheaterStage(1)}
-                            className="btn-cyber-primary inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 font-extrabold text-xs sm:text-sm cursor-pointer shadow-lg"
+                            className="btn-cyber-primary inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 font-extrabold text-xs sm:text-sm cursor-pointer shadow-lg"
                           >
                             <span>Role ou Clique: Ver 1º Projeto Saltar na Tela</span>
-                            <ArrowRight className="w-4 h-4 text-slate-950" />
+                            <ArrowRight className="w-4 h-4 text-slate-950 shrink-0" />
                           </button>
-                          <span className="text-xs font-mono text-emerald-400 animate-pulse">
-                            ↓ Dê mais 1 scroll com o mouse
+                          <span className="text-[11px] sm:text-xs font-mono text-emerald-400 animate-pulse">
+                            ↓ Dê mais 1 scroll
                           </span>
                         </div>
                       </div>
 
-                      {/* Right Column: 3D Visual Preview Collage of the 3 Flagship Projects */}
-                      <div className="lg:col-span-5 space-y-2.5">
+                      {/* Right Column: 3D Visual Preview Collage of the 3 Flagship Projects (Desktop) */}
+                      <div className="hidden lg:block lg:col-span-5 space-y-2.5">
                         <div className="text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-0.5">
                           PRÓXIMOS 3 DESTAQUES NO SEU SCROLL:
                         </div>
@@ -676,44 +675,46 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
                       animate={{ opacity: 1, scale: 1, y: 0, rotateX: 0 }}
                       exit={{ opacity: 0, scale: 0.92, y: -30, rotateX: -10 }}
                       transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
-                      className="w-full rounded-3xl p-5 sm:p-7 bg-gradient-to-br from-[#0C1428] via-[#080C18] to-[#0A141E] border-2 border-cyan-400 shadow-[0_30px_100px_-15px_rgba(34,211,238,0.38)]"
+                      className="w-full rounded-3xl p-4 sm:p-7 bg-gradient-to-br from-[#0C1428] via-[#080C18] to-[#0A141E] border-2 border-cyan-400 shadow-[0_30px_100px_-15px_rgba(34,211,238,0.38)]"
                     >
-                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-                        {/* Left Column (col-span-5): Full Analysis & Actions */}
-                        <div className="lg:col-span-5 space-y-3.5">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="px-3 py-1 rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950 font-mono font-extrabold text-xs">
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-6 items-center">
+                        {/* Left Column (col-span-5): Full Analysis & Actions (order-2 on mobile, order-1 on desktop) */}
+                        <div className="lg:col-span-5 space-y-2.5 lg:space-y-3.5 order-2 lg:order-1">
+                          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                            <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950 font-mono font-extrabold text-[10px] sm:text-xs">
                               PROJETO #0{spotlightStage} DE 03
                             </span>
-                            <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-cyan-300 font-mono text-xs font-bold">
+                            <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-white/5 border border-white/10 text-cyan-300 font-mono text-[10px] sm:text-xs font-bold">
                               {activeSpotlightProject.categoryLabel}
                             </span>
-                            <span className="text-xs font-mono text-emerald-400 font-bold">
+                            <span className="text-[10px] sm:text-xs font-mono text-emerald-400 font-bold">
                               ⚡ {activeSpotlightProject.speedScore}/100 PageSpeed
                             </span>
                           </div>
 
-                          <div className="space-y-1.5">
-                            <h3 className="text-xl sm:text-3xl font-extrabold font-heading text-white leading-tight">
+                          <div className="space-y-1 sm:space-y-1.5">
+                            <h3 className="text-lg sm:text-3xl font-extrabold font-heading text-white leading-tight">
                               {activeSpotlightProject.title}
                             </h3>
-                            <p className="text-xs text-cyan-300 font-semibold">
+                            <p className="text-[11px] sm:text-xs text-cyan-300 font-semibold">
                               {activeSpotlightProject.tagline}
                             </p>
-                            <p className="text-xs text-slate-300 leading-relaxed">
+                            <p className="hidden sm:block text-xs text-slate-300 leading-relaxed">
                               {activeSpotlightProject.description}
                             </p>
                           </div>
 
                           {/* Checklist of Project Engineering */}
-                          <div className="p-3 rounded-2xl bg-[#060912] border border-white/10 space-y-1.5">
+                          <div className="p-2.5 sm:p-3 rounded-2xl bg-[#060912] border border-white/10 space-y-1 sm:space-y-1.5">
                             <div className="text-[10px] font-mono uppercase text-cyan-400 font-bold">
                               DIFERENCIAIS ENTREGUES NESTE PROJETO:
                             </div>
                             {activeSpotlightProject.features.map((feat, idx) => (
                               <div
                                 key={idx}
-                                className="flex items-start gap-2 text-xs text-slate-200"
+                                className={`${
+                                  idx < 2 ? 'flex' : 'hidden sm:flex'
+                                } items-start gap-2 text-[11px] sm:text-xs text-slate-200 leading-snug`}
                               >
                                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
                                 <span>{feat}</span>
@@ -722,16 +723,16 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
                           </div>
 
                           {/* Action Buttons */}
-                          <div className="space-y-2.5 pt-1">
-                            <div className="flex flex-col sm:flex-row gap-2.5">
+                          <div className="space-y-2 pt-0.5 sm:pt-1">
+                            <div className="flex flex-row gap-2 sm:gap-2.5">
                               <button
                                 type="button"
                                 onClick={() =>
                                   handleOpenModal(activeSpotlightProject, 'site', 'desktop')
                                 }
-                                className="btn-cyber-primary flex-1 py-3.5 px-5 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg"
+                                className="btn-cyber-primary flex-1 py-2.5 sm:py-3.5 px-3 sm:px-5 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 font-extrabold text-[11px] sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer shadow-lg"
                               >
-                                <Globe className="w-4 h-4 text-slate-950 shrink-0" />
+                                <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-950 shrink-0" />
                                 <span>Navegar no Site Real Ao Vivo</span>
                               </button>
 
@@ -740,14 +741,14 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
                                 onClick={() =>
                                   handleOpenModal(activeSpotlightProject, 'site', 'mobile')
                                 }
-                                className="py-3.5 px-4 rounded-xl bg-[#06080F] hover:bg-slate-900 text-cyan-300 border border-cyan-400/40 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                                className="py-2.5 sm:py-3.5 px-3 sm:px-4 rounded-xl bg-[#06080F] hover:bg-slate-900 text-cyan-300 border border-cyan-400/40 font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
                               >
-                                <Smartphone className="w-4 h-4 shrink-0" />
+                                <Smartphone className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                                 <span>Modo Celular</span>
                               </button>
                             </div>
 
-                            <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                            <div className="flex flex-wrap items-center justify-between gap-2 pt-0.5 sm:pt-1">
                               <button
                                 type="button"
                                 onClick={() => {
@@ -756,7 +757,7 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
                                   const el = document.getElementById('orcamento');
                                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                                 }}
-                                className="text-xs font-mono text-emerald-400 hover:text-emerald-300 font-bold underline cursor-pointer"
+                                className="text-[11px] sm:text-xs font-mono text-emerald-400 hover:text-emerald-300 font-bold underline cursor-pointer"
                               >
                                 Orçar estrutura baseada neste modelo →
                               </button>
@@ -765,7 +766,7 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
                                 <button
                                   type="button"
                                   onClick={() => jumpToTheaterStage(spotlightStage + 1)}
-                                  className="text-xs font-mono text-cyan-300 hover:text-white cursor-pointer"
+                                  className="text-[11px] sm:text-xs font-mono text-cyan-300 hover:text-white cursor-pointer"
                                 >
                                   Próximo: Projeto #0{spotlightStage + 1} ↓
                                 </button>
@@ -773,7 +774,7 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
                                 <button
                                   type="button"
                                   onClick={scrollToAllModels}
-                                  className="text-xs font-mono text-amber-300 hover:text-white font-bold cursor-pointer"
+                                  className="text-[11px] sm:text-xs font-mono text-amber-300 hover:text-white font-bold cursor-pointer"
                                 >
                                   Ver Todos os 6 Modelos ↓
                                 </button>
@@ -782,8 +783,8 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
                           </div>
                         </div>
 
-                        {/* Right Column (col-span-7): Giant 3D Visual Showcase Mockup */}
-                        <div className="lg:col-span-7">
+                        {/* Right Column (col-span-7): Giant 3D Visual Showcase Mockup (order-1 on mobile, order-2 on desktop) */}
+                        <div className="lg:col-span-7 order-1 lg:order-2">
                           <div
                             onClick={() =>
                               handleOpenModal(activeSpotlightProject, 'site', 'desktop')
@@ -791,23 +792,23 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
                             className="group relative rounded-2xl overflow-hidden border-2 border-white/20 hover:border-cyan-400 transition-all duration-300 shadow-2xl cursor-pointer bg-[#05070E]"
                           >
                             {/* Browser Chrome Top Bar */}
-                            <div className="px-4 py-3 bg-[#06080F] border-b border-white/10 flex items-center justify-between text-xs font-mono">
-                              <div className="flex items-center gap-2">
-                                <span className="w-3 h-3 rounded-full bg-rose-500/80" />
-                                <span className="w-3 h-3 rounded-full bg-amber-500/80" />
-                                <span className="w-3 h-3 rounded-full bg-emerald-500/80" />
-                                <span className="ml-2 px-3 py-1 rounded-md bg-white/5 text-cyan-300 text-[11px] truncate max-w-[220px] sm:max-w-xs">
+                            <div className="px-3 sm:px-4 py-2 sm:py-3 bg-[#06080F] border-b border-white/10 flex items-center justify-between text-xs font-mono">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-rose-500/80 shrink-0" />
+                                <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-amber-500/80 shrink-0" />
+                                <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-500/80 shrink-0" />
+                                <span className="ml-1 sm:ml-2 px-2 sm:px-3 py-0.5 sm:py-1 rounded-md bg-white/5 text-cyan-300 text-[10px] sm:text-[11px] truncate max-w-[180px] sm:max-w-xs">
                                   {activeSpotlightProject.externalSiteUrl}
                                 </span>
                               </div>
-                              <span className="inline-flex items-center gap-1 text-emerald-400 font-bold text-[11px]">
+                              <span className="hidden sm:inline-flex items-center gap-1 text-emerald-400 font-bold text-[11px] shrink-0">
                                 <ExternalLink className="w-3.5 h-3.5" />
                                 <span>CLIQUE PARA TESTAR AO VIVO</span>
                               </span>
                             </div>
 
                             {/* High-Res Visual Image with Floating UI Elements */}
-                            <div className="relative h-[270px] sm:h-[310px] overflow-hidden">
+                            <div className="relative h-[135px] sm:h-[260px] lg:h-[310px] overflow-hidden">
                               <img
                                 src={activeSpotlightProject.imageUrl}
                                 alt={activeSpotlightProject.title}
@@ -818,32 +819,33 @@ export default function Portfolio({ onSelectProjectForQuote }: PortfolioProps) {
                               <div className="absolute inset-0 bg-gradient-to-r from-[#05070E]/85 via-[#05070E]/30 to-transparent" />
 
                               {/* Simulated Website Hero Overlay Inside the Visual Mockup */}
-                              <div className="absolute inset-0 p-6 sm:p-8 flex flex-col justify-between">
-                                <div className="flex items-center justify-between">
+                              <div className="absolute inset-0 p-3 sm:p-6 lg:p-8 flex flex-col justify-between">
+                                <div className="flex items-center justify-between gap-2">
                                   <span
-                                    className={`px-3 py-1 rounded-lg bg-gradient-to-r ${activeSpotlightProject.accentColor} text-slate-950 font-mono font-extrabold text-[10px] uppercase tracking-wider shadow-lg`}
+                                    className={`px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-lg bg-gradient-to-r ${activeSpotlightProject.accentColor} text-slate-950 font-mono font-extrabold text-[9px] sm:text-[10px] uppercase tracking-wider shadow-lg truncate`}
                                   >
                                     {activeSpotlightProject.mockupContent.badgeText}
                                   </span>
 
-                                  <span className="px-3 py-1.5 rounded-xl bg-[#06080F]/90 backdrop-blur-md border border-cyan-400/40 text-cyan-300 font-mono font-bold text-xs flex items-center gap-1.5 shadow-xl">
-                                    <Eye className="w-3.5 h-3.5 text-cyan-400" />
-                                    <span>Interagir com o Site Real</span>
+                                  <span className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl bg-[#06080F]/90 backdrop-blur-md border border-cyan-400/40 text-cyan-300 font-mono font-bold text-[10px] sm:text-xs flex items-center gap-1.5 shadow-xl shrink-0">
+                                    <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-cyan-400" />
+                                    <span className="hidden sm:inline">Interagir com o Site Real</span>
+                                    <span className="sm:hidden">Abrir</span>
                                   </span>
                                 </div>
 
-                                <div className="space-y-4 max-w-lg">
-                                  <div className="space-y-1.5">
-                                    <h4 className="text-xl sm:text-3xl font-extrabold font-heading text-white leading-tight drop-shadow-lg">
+                                <div className="space-y-2 sm:space-y-4 max-w-lg">
+                                  <div className="space-y-1 sm:space-y-1.5">
+                                    <h4 className="text-sm sm:text-xl lg:text-3xl font-extrabold font-heading text-white leading-tight drop-shadow-lg">
                                       {activeSpotlightProject.mockupContent.heroTitle}
                                     </h4>
-                                    <p className="text-xs sm:text-sm text-slate-200 line-clamp-2">
+                                    <p className="hidden sm:block text-xs sm:text-sm text-slate-200 line-clamp-2">
                                       {activeSpotlightProject.mockupContent.heroSubtitle}
                                     </p>
                                   </div>
 
                                   {/* 3 Mini Cards Inside the Visual Screen */}
-                                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                                  <div className="hidden sm:grid sm:grid-cols-3 gap-2.5">
                                     {activeSpotlightProject.mockupContent.items.map((it) => (
                                       <div
                                         key={it.title}

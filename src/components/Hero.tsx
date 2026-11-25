@@ -30,11 +30,38 @@ interface HeroProps {
 
 function HeroMobile({ onOpenFunnel }: HeroProps) {
   const [revealPercent, setRevealPercent] = useState<number>(0);
+  const [isManualControl, setIsManualControl] = useState<boolean>(false);
   const [isDragging, setIsDragging] = useState<boolean>(false);
+  const heroSectionRef = useRef<HTMLElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
+
+  const { scrollYProgress } = useScroll({
+    target: heroSectionRef,
+    offset: ['start start', 'end end'],
+  });
+
+  const smoothScroll = useSpring(scrollYProgress, {
+    stiffness: 110,
+    damping: 26,
+    mass: 0.4,
+  });
+
+  const beforeBgScale = useTransform(smoothScroll, [0, 0.6, 1], [1.0, 1.06, 1.1]);
+  const afterBgScale = useTransform(smoothScroll, [0, 0.4, 1], [1.08, 1.02, 1.0]);
+
+  useMotionValueEvent(smoothScroll, 'change', (v) => {
+    if ((v <= 0.02 || v >= 0.98) && isManualControl && !isDragging) {
+      setIsManualControl(false);
+    }
+    if (!isManualControl) {
+      const normalized = Math.max(0, Math.min(1, (v - 0.03) / 0.78));
+      setRevealPercent(Math.round(normalized * 100));
+    }
+  });
 
   const updateFromClientX = (clientX: number) => {
     if (!stageRef.current) return;
+    setIsManualControl(true);
     const rect = stageRef.current.getBoundingClientRect();
     const raw = ((clientX - rect.left) / rect.width) * 100;
     const clamped = raw <= 2 ? 0 : raw >= 98 ? 100 : raw;
@@ -45,284 +72,284 @@ function HeroMobile({ onOpenFunnel }: HeroProps) {
 
   return (
     <section
+      ref={heroSectionRef}
       id="inicio"
-      className="relative w-full bg-[#04060C] pt-20 pb-8 px-4 overflow-x-clip border-b border-white/10"
+      className="relative h-[220vh] w-full bg-[#04060C] select-none border-b border-white/10"
     >
-      <div className="max-w-xl mx-auto space-y-3.5">
-        {/* Compact Phase Status Pill */}
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#080C18] border border-white/15 shadow-lg w-full">
-          <span
-            className={`w-2 h-2 rounded-full shrink-0 ${
-              isAfterPhase
-                ? 'bg-emerald-400 shadow-[0_0_10px_#10b981] animate-ping'
-                : 'bg-rose-500 shadow-[0_0_10px_#f43f5e] animate-pulse'
-            }`}
-          />
-          <span className="text-[11px] font-mono font-extrabold tracking-wide uppercase text-white leading-snug">
-            {isAfterPhase
-              ? 'FASE 02 · PADRÃO A01 WEB: VENDENDO 24/7'
-              : 'FASE 01 · REALIDADE COMUM: SITE FEIO & CAOS'}
-          </span>
-        </div>
+      <div className="sticky top-0 left-0 w-full h-[100svh] flex flex-col justify-between pt-[72px] pb-3 px-3.5 overflow-hidden">
+        <div className="max-w-xl w-full mx-auto flex-1 flex flex-col justify-between gap-2 min-h-0">
+          {/* 1. TOP ROW (~32px): Compact Status Badge + 3 Mini Quick-Jump Pills */}
+          <div className="flex items-center justify-between gap-1.5 shrink-0">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#080C18]/95 border border-white/15 shadow min-w-0">
+              <span
+                className={`w-2 h-2 rounded-full shrink-0 ${
+                  isAfterPhase
+                    ? 'bg-emerald-400 shadow-[0_0_8px_#10b981] animate-ping'
+                    : 'bg-rose-500 shadow-[0_0_8px_#f43f5e] animate-pulse'
+                }`}
+              />
+              <span className="text-[10px] font-mono font-extrabold tracking-wide uppercase text-white truncate">
+                {isAfterPhase ? 'FASE 02 · A01 WEB' : 'FASE 01 · CAOS'}
+              </span>
+            </div>
 
-        {/* Interactive 16:10 Full-Frame Before/After Visual Box (Zero face obstruction!) */}
-        <div
-          ref={stageRef}
-          onPointerDown={(e) => {
-            e.currentTarget.setPointerCapture(e.pointerId);
-            setIsDragging(true);
-            updateFromClientX(e.clientX);
-          }}
-          onPointerMove={(e) => {
-            if (isDragging) {
-              updateFromClientX(e.clientX);
-            }
-          }}
-          onPointerUp={(e) => {
-            if (!isDragging) return;
-            setIsDragging(false);
-            try {
-              e.currentTarget.releasePointerCapture(e.pointerId);
-            } catch {
-              // ignore
-            }
-          }}
-          onPointerCancel={() => setIsDragging(false)}
-          className="aspect-[16/10] w-full rounded-2xl overflow-hidden border border-white/20 relative touch-pan-y select-none shadow-2xl bg-[#080508]"
-        >
-          {/* Base Image: Antes */}
-          <img
-            src="/images/hero-antes-caos.jpg"
-            alt="Antes: Site Feio, Atendimento Lento e Sem Organização"
-            className="w-full h-full object-cover object-center pointer-events-none"
-          />
-
-          {/* Top Clipped Image: Depois A01 WEB */}
-          <div
-            className="absolute inset-0 z-10 overflow-hidden"
-            style={{
-              clipPath: `inset(0 ${100 - revealPercent}% 0 0)`,
-              WebkitClipPath: `inset(0 ${100 - revealPercent}% 0 0)`,
-            }}
-          >
-            <img
-              src="/images/hero-depois-a01web.jpg"
-              alt="Depois: A01 WEB Empresa Organizada e Automations"
-              className="w-full h-full object-cover object-center pointer-events-none"
-            />
-          </div>
-
-          {/* Non-intrusive top corner badges */}
-          <div className="absolute top-2.5 left-2.5 z-20 pointer-events-none">
-            <span className="px-2 py-0.5 rounded-md bg-rose-950/90 border border-rose-500/60 text-rose-200 text-[10px] font-mono font-extrabold shadow">
-              ANTES
-            </span>
-          </div>
-          <div className="absolute top-2.5 right-2.5 z-20 pointer-events-none">
-            <span className="px-2 py-0.5 rounded-md bg-emerald-950/90 border border-emerald-400/60 text-emerald-300 text-[10px] font-mono font-extrabold shadow">
-              A01 WEB
-            </span>
-          </div>
-
-          {/* Vertical glowing cyan/emerald laser beam & compact orb */}
-          <div
-            className="absolute inset-y-0 -ml-5 w-10 flex items-center justify-center pointer-events-none z-30"
-            style={{ left: `${revealPercent}%` }}
-          >
-            <div className="absolute inset-y-0 w-6 bg-gradient-to-r from-transparent via-cyan-400/35 to-transparent blur-sm" />
-            <div className="absolute inset-y-0 w-[2.5px] bg-gradient-to-b from-cyan-300 via-emerald-400 to-cyan-300 shadow-[0_0_20px_3px_rgba(34,211,238,0.9)]" />
-            <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-emerald-400 text-slate-950 flex items-center justify-center shadow-[0_0_20px_rgba(34,211,238,0.95)] border-2 border-white">
-              <ArrowLeftRight className="w-4 h-4 stroke-[2.5]" />
+            <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-[#080C18]/95 border border-white/15 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playSelect();
+                  setIsManualControl(true);
+                  setRevealPercent(0);
+                }}
+                className={`px-2 py-1 rounded-lg text-[10px] font-mono font-extrabold transition-all cursor-pointer ${
+                  revealPercent < 25
+                    ? 'bg-rose-500 text-white shadow'
+                    : 'text-slate-300'
+                }`}
+              >
+                Antes
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playSelect();
+                  setIsManualControl(true);
+                  setRevealPercent(50);
+                }}
+                className={`px-2 py-1 rounded-lg text-[10px] font-mono font-extrabold transition-all cursor-pointer ${
+                  revealPercent >= 25 && revealPercent <= 75
+                    ? 'bg-cyan-400 text-slate-950 shadow'
+                    : 'text-slate-300'
+                }`}
+              >
+                50/50
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playSelect();
+                  setIsManualControl(true);
+                  setRevealPercent(100);
+                }}
+                className={`px-2 py-1 rounded-lg text-[10px] font-mono font-extrabold transition-all cursor-pointer ${
+                  revealPercent > 75
+                    ? 'bg-gradient-to-r from-emerald-400 to-cyan-400 text-slate-950 shadow'
+                    : 'text-slate-300'
+                }`}
+              >
+                A01 WEB
+              </button>
             </div>
           </div>
-        </div>
 
-        {/* Thumb-Friendly Transformation Controls right below the photo */}
-        <div className="p-3 rounded-2xl bg-[#070B16] border border-white/15 space-y-2.5 shadow-xl">
-          <div className="grid grid-cols-3 gap-1.5">
-            <button
-              type="button"
-              onClick={() => {
-                sound.playSelect();
-                setRevealPercent(0);
+          {/* 2. INTERACTIVE BEFORE/AFTER PHOTO FRAME */}
+          <div
+            ref={stageRef}
+            onPointerDown={(e) => {
+              e.currentTarget.setPointerCapture(e.pointerId);
+              setIsDragging(true);
+              updateFromClientX(e.clientX);
+            }}
+            onPointerMove={(e) => {
+              if (isDragging) {
+                updateFromClientX(e.clientX);
+              }
+            }}
+            onPointerUp={(e) => {
+              if (!isDragging) return;
+              setIsDragging(false);
+              try {
+                e.currentTarget.releasePointerCapture(e.pointerId);
+              } catch {
+                // ignore
+              }
+            }}
+            onPointerCancel={() => setIsDragging(false)}
+            className="relative h-[27svh] min-h-[168px] max-h-[245px] w-full rounded-2xl overflow-hidden border border-cyan-400/35 touch-pan-y select-none shadow-2xl bg-[#080508] shrink-0"
+          >
+            {/* Layer 1: ANTES */}
+            <motion.img
+              src="/images/hero-antes-caos.jpg"
+              alt="Antes: Site Feio, Atendimento Lento e Sem Organização"
+              style={{ scale: beforeBgScale }}
+              className="w-full h-full object-cover object-center pointer-events-none will-change-transform"
+            />
+
+            {/* Layer 2: DEPOIS (Clipped) */}
+            <div
+              className="absolute inset-0 z-10 overflow-hidden"
+              style={{
+                clipPath: `inset(0 ${100 - revealPercent}% 0 0)`,
+                WebkitClipPath: `inset(0 ${100 - revealPercent}% 0 0)`,
               }}
-              className={`py-2 px-2 rounded-xl text-[11px] font-mono font-extrabold transition-all cursor-pointer ${
-                revealPercent < 25
-                  ? 'bg-rose-500 text-white shadow-md shadow-rose-500/30'
-                  : 'bg-slate-900/90 text-slate-300 border border-white/10'
-              }`}
             >
-              😱 Antes
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                sound.playSelect();
-                setRevealPercent(50);
-              }}
-              className={`py-2 px-2 rounded-xl text-[11px] font-mono font-extrabold transition-all cursor-pointer ${
-                revealPercent >= 25 && revealPercent <= 75
-                  ? 'bg-cyan-400 text-slate-950 shadow-md shadow-cyan-400/30'
-                  : 'bg-slate-900/90 text-slate-300 border border-white/10'
-              }`}
+              <motion.img
+                src="/images/hero-depois-a01web.jpg"
+                alt="Depois: A01 WEB Empresa Organizada e Automations"
+                style={{ scale: afterBgScale }}
+                className="w-full h-full object-cover object-center pointer-events-none will-change-transform"
+              />
+            </div>
+
+            {/* Tiny Corner Badges */}
+            <div className="absolute top-2 left-2 z-20 pointer-events-none">
+              <span className="px-2 py-0.5 rounded-md bg-rose-950/90 border border-rose-500/60 text-rose-200 text-[9px] font-mono font-extrabold shadow">
+                ANTES
+              </span>
+            </div>
+            <div className="absolute top-2 right-2 z-20 pointer-events-none">
+              <span className="px-2 py-0.5 rounded-md bg-emerald-950/90 border border-emerald-400/60 text-emerald-300 text-[9px] font-mono font-extrabold shadow">
+                A01 WEB
+              </span>
+            </div>
+
+            {/* Glowing Vertical Laser Beam & Compact Orb */}
+            <div
+              className="absolute inset-y-0 -ml-4 w-8 flex items-center justify-center pointer-events-none z-30"
+              style={{ left: `${revealPercent}%` }}
             >
-              ⚡ 50/50
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                sound.playSelect();
-                setRevealPercent(100);
-              }}
-              className={`py-2 px-2 rounded-xl text-[11px] font-mono font-extrabold transition-all cursor-pointer ${
-                revealPercent > 75
-                  ? 'bg-gradient-to-r from-emerald-400 to-cyan-400 text-slate-950 shadow-md shadow-emerald-400/30'
-                  : 'bg-slate-900/90 text-slate-300 border border-white/10'
-              }`}
-            >
-              🚀 A01 WEB
-            </button>
+              <div className="absolute inset-y-0 w-5 bg-gradient-to-r from-transparent via-cyan-400/35 to-transparent blur-sm" />
+              <div className="absolute inset-y-0 w-[2.5px] bg-gradient-to-b from-cyan-300 via-emerald-400 to-cyan-300 shadow-[0_0_18px_3px_rgba(34,211,238,0.9)]" />
+              <div className="relative w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-400 to-emerald-400 text-slate-950 flex items-center justify-center shadow-[0_0_18px_rgba(34,211,238,0.95)] border-2 border-white">
+                <ArrowLeftRight className="w-3.5 h-3.5 stroke-[2.5]" />
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2.5 px-1">
+          {/* 3. COMPACT MORPHING COPY + CTA CARD */}
+          <div
+            className={`p-3.5 rounded-2xl bg-[#070B16]/95 border shadow-2xl space-y-2.5 flex-1 flex flex-col justify-between min-h-0 ${
+              isAfterPhase ? 'border-cyan-400/45' : 'border-rose-500/35'
+            }`}
+          >
+            <AnimatePresence mode="wait">
+              {!isAfterPhase ? (
+                <motion.div
+                  key="mob-before"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-1.5"
+                >
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-500/15 border border-rose-500/40 text-rose-300 text-[10px] font-mono font-extrabold">
+                    <AlertTriangle className="w-3 h-3 text-rose-400 shrink-0" />
+                    <span>ROLE PARA TRANSFORMAR ↓</span>
+                  </div>
+
+                  <h1 className="text-[1.25rem] sm:text-2xl font-extrabold font-heading tracking-tight text-white leading-[1.12]">
+                    Site Feio e Atendimento Lento Estão{' '}
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-amber-300 to-rose-500">
+                      Entregando Seus Clientes.
+                    </span>
+                  </h1>
+
+                  <p className="text-[11.5px] sm:text-xs text-slate-200 leading-snug line-clamp-2">
+                    Página amadora ou demora no Zap faz você perder vendas em segundos. Role a tela
+                    e veja o padrão <strong className="text-white">01 WEB</strong>.
+                  </p>
+
+                  <div className="px-2.5 py-1.5 rounded-xl bg-rose-950/60 border border-rose-500/40 text-[11px] font-bold text-rose-100 truncate">
+                    ❌ 84% fecham o site antes de carregar
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="mob-after"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-1.5"
+                >
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-400/15 border border-emerald-400/50 text-emerald-300 text-[10px] font-mono font-extrabold">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                    <span>PADRÃO A01 WEB ATIVO ({revealPercent}%)</span>
+                  </div>
+
+                  <h1 className="text-[1.25rem] sm:text-2xl font-extrabold font-heading tracking-tight text-white leading-[1.12]">
+                    Empresa Organizada,{' '}
+                    <span className="text-gradient-animated">
+                      Site de Elite & Robô 24/7 no Zap.
+                    </span>
+                  </h1>
+
+                  <p className="text-[11.5px] sm:text-xs text-slate-100 leading-snug line-clamp-2">
+                    Estrutura pronta em <strong className="text-emerald-300">3 a 7 dias</strong>:
+                    visual de autoridade, triagem automática e zero mensalidade.
+                  </p>
+
+                  <div className="px-2.5 py-1.5 rounded-xl bg-emerald-950/55 border border-emerald-400/45 text-[11px] font-bold text-emerald-100 flex items-center gap-1.5 truncate">
+                    <Bot className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span className="truncate">
+                      Robô 24/7: &ldquo;Cliente qualificado pronto p/ fechar!&rdquo;
+                    </span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="space-y-1.5 pt-0.5 shrink-0">
+              {onOpenFunnel && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    sound.playClick(950);
+                    onOpenFunnel();
+                  }}
+                  className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-cyan-400 text-slate-950 font-extrabold text-xs cursor-pointer shadow-[0_0_20px_rgba(34,211,238,0.4)]"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-slate-950 shrink-0" />
+                  <span>Quero Organizar Minha Empresa Agora</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-slate-950 shrink-0" />
+                </button>
+              )}
+
+              <div className="grid grid-cols-2 gap-2">
+                <a
+                  href="#portfolio"
+                  onClick={() => sound.playClick(900)}
+                  className="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-white/10 text-white border border-white/20 font-bold text-[11px] cursor-pointer"
+                >
+                  <Layers className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                  <span>Ver 6 Projetos</span>
+                </a>
+
+                <a
+                  href="#orcamento"
+                  onClick={() => sound.playSelect()}
+                  className="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[#060913] text-cyan-300 border border-cyan-400/40 font-bold text-[11px] cursor-pointer"
+                >
+                  <Calculator className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                  <span>Simular Orçamento</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* 4. BOTTOM GLASS SCROLL PROGRESS BAR (~30px) */}
+          <div className="px-3 py-1.5 rounded-xl bg-[#050811]/90 backdrop-blur-xl border border-white/15 flex items-center gap-2.5 shrink-0 shadow-lg">
             <span className="text-[10px] font-mono text-rose-400 font-bold shrink-0">CAOS</span>
             <input
               type="range"
               min="0"
               max="100"
               value={revealPercent}
-              onChange={(e) => setRevealPercent(Number(e.target.value))}
+              onChange={(e) => {
+                setIsManualControl(true);
+                setRevealPercent(Number(e.target.value));
+              }}
               aria-label="Arrastar para comparar Antes e Depois"
               className="w-full h-2 rounded-lg appearance-none bg-slate-800 accent-cyan-400 cursor-pointer"
             />
             <span className="text-[10px] font-mono text-emerald-400 font-bold shrink-0">
               01 WEB
             </span>
+            <span className="text-[10px] font-mono font-extrabold text-cyan-300 tabular-nums shrink-0">
+              {revealPercent}%
+            </span>
           </div>
         </div>
-
-        {/* Full-Width High-Conversion Copy & CTA Card below controls */}
-        <motion.div
-          key={isAfterPhase ? 'mob-after' : 'mob-before'}
-          initial={{ opacity: 0.35 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.22 }}
-          className={`p-5 rounded-3xl bg-[#070B16] border shadow-2xl space-y-4 ${
-            isAfterPhase ? 'border-cyan-400/45' : 'border-rose-500/35'
-          }`}
-        >
-          {!isAfterPhase ? (
-            <>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/15 border border-rose-500/40 text-rose-300 text-[11px] font-mono font-extrabold">
-                <AlertTriangle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                <span>ARRASTE A BARRA ACIMA PARA TRANSFORMAR ↑</span>
-              </div>
-
-              <h1 className="text-2xl sm:text-3xl font-extrabold font-heading tracking-tight text-white leading-[1.12]">
-                Site Feio e Atendimento Lento Estão{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-amber-300 to-rose-500">
-                  Entregando Seus Clientes Para o Concorrente.
-                </span>
-              </h1>
-
-              <p className="text-slate-200 text-xs sm:text-sm leading-relaxed">
-                Quando o cliente clica no seu anúncio e encontra uma página amadora ou demora no
-                WhatsApp, você perde a venda em segundos. Puxe o laser na foto acima e veja o padrão{' '}
-                <strong className="text-white">01 WEB</strong>:
-              </p>
-
-              <div className="p-3 rounded-2xl bg-rose-950/60 border border-rose-500/40 space-y-1">
-                <div className="flex items-center justify-between text-[10px] font-mono text-rose-300 font-extrabold">
-                  <span>DIAGNÓSTICO SEM A 01 WEB</span>
-                  <span className="px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300">
-                    CRÍTICO
-                  </span>
-                </div>
-                <div className="text-xs font-bold text-white">
-                  ❌ 84% fecham o site antes de carregar
-                </div>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-400/15 border border-emerald-400/50 text-emerald-300 text-[11px] font-mono font-extrabold">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span>PADRÃO 01 WEB ATIVO ({revealPercent}%)</span>
-              </div>
-
-              <h1 className="text-2xl sm:text-3xl font-extrabold font-heading tracking-tight text-white leading-[1.12]">
-                Empresa Organizada,{' '}
-                <span className="text-gradient-animated">
-                  Site de Elite & Robô Vendendo 24/7 no Seu WhatsApp.
-                </span>
-              </h1>
-
-              <p className="text-slate-100 text-xs sm:text-sm leading-relaxed">
-                Na <strong className="text-cyan-300">01 WEB</strong>, sua estrutura fica pronta em{' '}
-                <strong className="text-emerald-300">3 a 7 dias</strong>: visual de alto padrão,
-                triagem automática 24h no WhatsApp e painel próprio sem mensalidade.
-              </p>
-
-              <div className="p-3 rounded-2xl bg-[#05141C] border border-emerald-400/50 space-y-1">
-                <div className="flex items-center justify-between text-[10px] font-mono text-emerald-300 font-extrabold">
-                  <span className="flex items-center gap-1">
-                    <Bot className="w-3.5 h-3.5 text-emerald-400" />
-                    ROBÔ WHATSAPP 01 WEB · 24/7
-                  </span>
-                  <span className="px-1.5 py-0.5 rounded bg-emerald-400 text-slate-950">
-                    AO VIVO
-                  </span>
-                </div>
-                <div className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <MessageSquare className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                  <span>&ldquo;Novo Cliente Qualificado & Pronto p/ Fechar!&rdquo;</span>
-                </div>
-              </div>
-            </>
-          )}
-
-          <div className="space-y-2 pt-1">
-            {onOpenFunnel && (
-              <button
-                type="button"
-                onClick={() => {
-                  sound.playClick(950);
-                  onOpenFunnel();
-                }}
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-cyan-400 text-slate-950 font-extrabold text-xs sm:text-sm cursor-pointer shadow-[0_0_20px_rgba(34,211,238,0.4)]"
-              >
-                <Sparkles className="w-4 h-4 text-slate-950 shrink-0" />
-                <span>Quero Organizar Minha Empresa Agora</span>
-                <ArrowRight className="w-4 h-4 text-slate-950 shrink-0" />
-              </button>
-            )}
-
-            <div className="grid grid-cols-2 gap-2">
-              <a
-                href="#portfolio"
-                onClick={() => sound.playClick(900)}
-                className="inline-flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl bg-white/10 text-white border border-white/20 font-bold text-xs cursor-pointer"
-              >
-                <Layers className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                <span>Ver 6 Projetos</span>
-              </a>
-
-              <a
-                href="#orcamento"
-                onClick={() => sound.playSelect()}
-                className="inline-flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl bg-[#060913] text-cyan-300 border border-cyan-400/40 font-bold text-xs cursor-pointer"
-              >
-                <Calculator className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                <span>Simular Orçamento</span>
-              </a>
-            </div>
-          </div>
-
-          <div className="pt-2 border-t border-white/10 flex items-center justify-center gap-1.5 text-[11px] font-mono text-emerald-300 font-bold text-center">
-            <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>1 Ano Domínio + Hospedagem Grátis · Pronto em 3 a 7 dias</span>
-          </div>
-        </motion.div>
       </div>
     </section>
   );

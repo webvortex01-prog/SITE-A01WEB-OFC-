@@ -11,7 +11,6 @@ import {
   XCircle,
 } from 'lucide-react';
 import { sound } from '../utils/audio';
-import { useIsDesktop } from '../utils/scrollytelling';
 
 interface NicheComparison {
   id: 'advocacia' | 'carros' | 'estetica';
@@ -99,7 +98,6 @@ const NICHE_COMPARISONS: NicheComparison[] = [
 ];
 
 export default function BeforeAfterSlider() {
-  const isDesktop = useIsDesktop();
   // sliderPosition: 0% = 100% 01 WEB visible; 100% = 100% Site Comum visible; 50% = 50/50 split
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isManualControl, setIsManualControl] = useState(false);
@@ -127,7 +125,6 @@ export default function BeforeAfterSlider() {
 
   // Automatic scroll sweep from 100% (Site Comum) -> 0% (100% Padrão 01 WEB) unless user is manually dragging
   useMotionValueEvent(smoothScroll, 'change', (latest) => {
-    if (typeof window !== 'undefined' && window.innerWidth < 1024) return;
     if (latest < 0.04 || latest > 0.96) {
       if (isManualControl && !isDragging) setIsManualControl(false);
       return;
@@ -154,19 +151,15 @@ export default function BeforeAfterSlider() {
     <section
       ref={sectionRef}
       id="comparativo"
-      className="py-14 lg:min-h-[145vh] relative overflow-x-clip bg-[#06080F] border-b border-white/10"
+      className="py-8 lg:py-14 min-h-[170vh] lg:min-h-[145vh] relative overflow-x-clip bg-[#06080F] border-b border-white/10"
     >
-      <div className="lg:sticky lg:top-15 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 scrolly-perspective">
+      <div className="sticky top-16 lg:top-15 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 scrolly-perspective">
         <motion.div
-          style={
-            isDesktop
-              ? {
-                  scale: stageScale,
-                  rotateX: stageRotateX,
-                  transformStyle: 'preserve-3d',
-                }
-              : undefined
-          }
+          style={{
+            scale: stageScale,
+            rotateX: stageRotateX,
+            transformStyle: 'preserve-3d',
+          }}
         >
           <div className="text-center max-w-3xl mx-auto space-y-2 mb-4">
             <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-mono text-cyan-400">
@@ -254,159 +247,11 @@ export default function BeforeAfterSlider() {
           </div>
 
           {/* ===================================================================
-              DEDICATED MOBILE COMPARISON CARD (< 768px): ZERO CLIPPING!
-             =================================================================== */}
-          <div className="block md:hidden space-y-3">
-            <div className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-[#0B0F1A] border border-white/15">
-              <button
-                type="button"
-                onClick={() => {
-                  sound.playSelect();
-                  setIsManualControl(true);
-                  setSliderPosition(0);
-                }}
-                className={`py-2.5 px-3 rounded-xl text-xs font-mono font-extrabold transition-all cursor-pointer ${
-                  sliderPosition <= 50
-                    ? 'bg-gradient-to-r from-emerald-400 to-cyan-400 text-slate-950 shadow-lg'
-                    : 'text-slate-300'
-                }`}
-              >
-                🚀 Padrão 01 WEB
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  sound.playSelect();
-                  setIsManualControl(true);
-                  setSliderPosition(100);
-                }}
-                className={`py-2.5 px-3 rounded-xl text-xs font-mono font-extrabold transition-all cursor-pointer ${
-                  sliderPosition > 50
-                    ? 'bg-rose-500 text-white shadow-lg'
-                    : 'text-slate-300'
-                }`}
-              >
-                ❌ Site Comum
-              </button>
-            </div>
-
-            {sliderPosition <= 50 ? (
-              <div className="rounded-3xl bg-[#050811] border-2 border-cyan-400/50 overflow-hidden shadow-2xl">
-                <div className="relative h-36 overflow-hidden">
-                  <img
-                    src={currentNiche.imageUrl}
-                    alt={currentNiche.afterTitle}
-                    referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover opacity-70"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#050811] via-[#050811]/35 to-transparent" />
-                  <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 text-[10px] font-mono">
-                    <span className="px-2.5 py-1 rounded-full bg-emerald-950/90 border border-emerald-400/50 text-emerald-300 font-extrabold truncate">
-                      {currentNiche.afterBadge}
-                    </span>
-                    <span className="px-2.5 py-1 rounded-full bg-cyan-400 text-slate-950 font-extrabold shrink-0">
-                      100/100
-                    </span>
-                  </div>
-                </div>
-
-                <div className="p-5 space-y-4 text-left">
-                  <div className="space-y-2">
-                    <div className="text-[11px] font-mono text-cyan-300 font-bold uppercase">
-                      ✓ Design Scrollytelling · ✓ Triagem 24/7
-                    </div>
-                    <h3 className="text-xl font-extrabold font-heading text-white leading-tight">
-                      {currentNiche.afterTitle}
-                    </h3>
-                    <p className="text-xs text-slate-200 leading-relaxed">
-                      {currentNiche.afterSubtitle}
-                    </p>
-                  </div>
-
-                  <div className="p-3.5 rounded-2xl bg-[#070C18] border border-cyan-400/35 space-y-2">
-                    <div className="flex items-center justify-between text-[11px] font-mono pb-1.5 border-b border-white/10">
-                      <span className="text-cyan-300 font-bold">TELEMETRIA 01 WEB</span>
-                      <span className="text-emerald-400 font-extrabold">ALTA CONVERSÃO</span>
-                    </div>
-                    {currentNiche.afterMetrics.map((m) => (
-                      <div key={m} className="flex items-start gap-2 text-xs text-slate-100">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                        <span>{m}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="pt-2 border-t border-white/10 flex flex-col gap-1.5 text-[11px] font-mono">
-                    <span className="text-emerald-400 font-bold flex items-center gap-1.5">
-                      <Smartphone className="w-3.5 h-3.5 shrink-0" /> Abre em &lt; 0.8s no Celular
-                    </span>
-                    <span className="text-cyan-300 font-bold flex items-center gap-1.5">
-                      <Bot className="w-3.5 h-3.5 shrink-0" /> Cliente já chega qualificado no WhatsApp
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-3xl bg-[#0E090C] border-2 border-rose-500/45 overflow-hidden shadow-2xl">
-                <div className="relative h-36 overflow-hidden">
-                  <img
-                    src={currentNiche.imageUrl}
-                    alt="Site comum lento"
-                    referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover grayscale contrast-75 blur-[1.5px] opacity-30"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0E090C] via-[#110D13]/60 to-transparent" />
-                  <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 text-[10px] font-mono">
-                    <span className="px-2.5 py-1 rounded-full bg-rose-950 border border-rose-500/50 text-rose-300 font-extrabold truncate">
-                      SITE COMUM / GENÉRICO
-                    </span>
-                    <span className="px-2.5 py-1 rounded-full bg-rose-600 text-white font-extrabold shrink-0">
-                      LENTO 6.4s+
-                    </span>
-                  </div>
-                </div>
-
-                <div className="p-5 space-y-4 text-left">
-                  <div className="space-y-2">
-                    <div className="text-[11px] font-mono text-rose-400 font-bold uppercase">
-                      ❌ Excesso de Plugins · ❌ Sem Triagem
-                    </div>
-                    <h3 className="text-xl font-extrabold font-heading text-slate-200 leading-tight">
-                      {currentNiche.beforeTitle}
-                    </h3>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      {currentNiche.beforeSubtitle}
-                    </p>
-                  </div>
-
-                  <div className="p-3.5 rounded-2xl bg-[#160B10] border border-rose-500/40 space-y-2">
-                    <div className="flex items-center justify-between text-[11px] font-mono pb-1.5 border-b border-rose-500/20">
-                      <span className="text-rose-400 font-bold">DIAGNÓSTICO DE FALHAS</span>
-                      <span className="text-rose-300 font-extrabold">BAIXA CONVERSÃO</span>
-                    </div>
-                    {currentNiche.beforeProblems.map((prob) => (
-                      <div key={prob} className="flex items-start gap-2 text-xs text-rose-100/90">
-                        <XCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-                        <span>{prob}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="pt-2 border-t border-rose-500/20 flex flex-col gap-1 text-[11px] font-mono text-rose-300">
-                    <span className="font-bold">❌ 84% dos clientes desistem antes de carregar</span>
-                    <span>Perda diária de orçamentos para o concorrente</span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* ===================================================================
-              INTERACTIVE X-RAY VISUAL SCANNER CONTAINER (CLIP-PATH ENGINE - DESKTOP/TABLET)
+              INTERACTIVE X-RAY VISUAL SCANNER CONTAINER (CLIP-PATH ENGINE - ALL VIEWPORTS)
               Uses CSS clip-path on a 100% solid opaque top layer so texts NEVER
               overlap or bleed through, and drags smoothly from 0% to 100%!
              =================================================================== */}
-          <div className="hidden md:block max-w-5xl mx-auto">
+          <div className="max-w-5xl mx-auto">
             <div
               ref={containerRef}
               onPointerDown={(e) => {
@@ -428,12 +273,12 @@ export default function BeforeAfterSlider() {
                 }
               }}
               onPointerCancel={() => setIsDragging(false)}
-              className="relative h-[380px] sm:h-[400px] rounded-3xl overflow-hidden border-2 border-cyan-400/40 select-none cursor-ew-resize shadow-[0_25px_80px_-15px_rgba(34,211,238,0.28)] touch-pan-y"
+              className="relative h-[430px] sm:h-[420px] md:h-[400px] rounded-3xl overflow-hidden border-2 border-cyan-400/40 select-none cursor-ew-resize shadow-[0_25px_80px_-15px_rgba(34,211,238,0.28)] touch-pan-y"
             >
               {/* ===============================================================
                   LAYER 1 (BASE LAYER - z-10): 100% PADRÃO 01 WEB
                  =============================================================== */}
-              <div className="absolute inset-0 z-10 bg-[#050811] flex flex-col justify-between p-6 sm:p-10 text-left overflow-hidden">
+              <div className="absolute inset-0 z-10 bg-[#050811] flex flex-col justify-between p-4 sm:p-6 md:p-10 text-left overflow-hidden">
                 {/* Full-Bleed High-Def Background Photo */}
                 <img
                   src={currentNiche.imageUrl}
@@ -446,40 +291,41 @@ export default function BeforeAfterSlider() {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#050811] via-transparent to-[#050811]/80 pointer-events-none" />
 
                 {/* Top Status Bar */}
-                <div className="relative z-10 flex items-center justify-between gap-2 text-xs font-mono">
-                  <span className="px-3 py-1 rounded-full bg-emerald-950/90 border border-emerald-400/50 text-emerald-300 font-extrabold flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <div className="relative z-10 flex items-center justify-between gap-2 text-[10px] sm:text-xs font-mono">
+                  <span className="px-2.5 md:px-3 py-1 rounded-full bg-emerald-950/90 border border-emerald-400/50 text-emerald-300 font-extrabold flex items-center gap-1.5 min-w-0">
+                    <CheckCircle2 className="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-400 shrink-0" />
                     <span className="truncate">{currentNiche.afterBadge}</span>
                   </span>
-                  <span className="px-3 py-1 rounded-full bg-cyan-400 text-slate-950 font-extrabold flex items-center gap-1 shrink-0">
-                    <Zap className="w-3.5 h-3.5 fill-slate-950" />
-                    <span>100/100 PAGESPEED</span>
+                  <span className="px-2.5 md:px-3 py-1 rounded-full bg-cyan-400 text-slate-950 font-extrabold flex items-center gap-1 shrink-0">
+                    <Zap className="w-3 h-3 md:w-3.5 md:h-3.5 fill-slate-950" />
+                    <span>100/100</span>
+                    <span className="hidden sm:inline">PAGESPEED</span>
                   </span>
                 </div>
 
                 {/* Center Content + Telemetry HUD */}
-                <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center my-auto">
-                  <div className="md:col-span-7 space-y-3">
-                    <div className="text-xs font-mono text-cyan-300 font-bold uppercase tracking-wider">
+                <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-6 items-center my-auto">
+                  <div className="md:col-span-7 space-y-1.5 md:space-y-3">
+                    <div className="text-[10px] md:text-xs font-mono text-cyan-300 font-bold uppercase tracking-wider truncate">
                       ✓ Design Scrollytelling · ✓ Triagem 24/7 · ✓ Código 100% Seu
                     </div>
-                    <h3 className="text-2xl sm:text-4xl font-extrabold font-heading text-white leading-tight">
+                    <h3 className="text-lg sm:text-2xl md:text-4xl font-extrabold font-heading text-white leading-tight">
                       {currentNiche.afterTitle}
                     </h3>
-                    <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                    <p className="text-[11px] sm:text-sm text-slate-200 leading-snug md:leading-relaxed line-clamp-2 md:line-clamp-none">
                       {currentNiche.afterSubtitle}
                     </p>
                   </div>
 
                   {/* Right Floating Glass HUD */}
-                  <div className="md:col-span-5 p-4 sm:p-5 rounded-2xl bg-[#060913]/95 border border-cyan-400/40 space-y-2.5 shadow-2xl">
-                    <div className="flex items-center justify-between text-xs font-mono pb-2 border-b border-white/10">
+                  <div className="md:col-span-5 p-3 sm:p-4 md:p-5 rounded-2xl bg-[#060913]/95 border border-cyan-400/40 space-y-1.5 md:space-y-2.5 shadow-2xl">
+                    <div className="flex items-center justify-between text-[10px] md:text-xs font-mono pb-1.5 md:pb-2 border-b border-white/10">
                       <span className="text-cyan-300 font-bold">TELEMETRIA 01 WEB</span>
                       <span className="text-emerald-400 font-extrabold">ALTA CONVERSÃO</span>
                     </div>
                     {currentNiche.afterMetrics.map((m) => (
-                      <div key={m} className="flex items-start gap-2 text-xs text-slate-100">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                      <div key={m} className="flex items-start gap-2 text-[11px] md:text-xs text-slate-100 leading-snug">
+                        <CheckCircle2 className="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-400 shrink-0 mt-0.5" />
                         <span>{m}</span>
                       </div>
                     ))}
@@ -487,12 +333,12 @@ export default function BeforeAfterSlider() {
                 </div>
 
                 {/* Bottom Bar */}
-                <div className="relative z-10 flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-slate-200 pt-3 border-t border-white/15">
+                <div className="relative z-10 flex flex-wrap items-center justify-between gap-2 text-[10px] md:text-xs font-mono text-slate-200 pt-2 md:pt-3 border-t border-white/15">
                   <span className="text-emerald-400 font-bold flex items-center gap-1.5">
-                    <Smartphone className="w-4 h-4" /> Abre em &lt; 0.8s no Celular
+                    <Smartphone className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" /> Abre em &lt; 0.8s no Celular
                   </span>
-                  <span className="text-cyan-300 font-bold flex items-center gap-1.5">
-                    <Bot className="w-4 h-4" /> Cliente já chega qualificado no seu WhatsApp
+                  <span className="hidden sm:flex text-cyan-300 font-bold items-center gap-1.5">
+                    <Bot className="w-4 h-4 shrink-0" /> Cliente já chega qualificado no seu WhatsApp
                   </span>
                 </div>
               </div>
@@ -503,7 +349,7 @@ export default function BeforeAfterSlider() {
                   so there is ZERO bleed-through and ZERO text overlapping!
                  =============================================================== */}
               <div
-                className="absolute inset-0 z-20 bg-[#0E090C] flex flex-col justify-between p-6 sm:p-10 text-left overflow-hidden"
+                className="absolute inset-0 z-20 bg-[#0E090C] flex flex-col justify-between p-4 sm:p-6 md:p-10 text-left overflow-hidden"
                 style={{
                   clipPath: `inset(0 ${100 - sliderPosition}% 0 0)`,
                   WebkitClipPath: `inset(0 ${100 - sliderPosition}% 0 0)`,
@@ -520,39 +366,39 @@ export default function BeforeAfterSlider() {
                 <div className="absolute inset-0 bg-gradient-to-r from-[#130A0E] via-[#110D13]/95 to-[#160D12]/95 pointer-events-none" />
 
                 {/* Top Warning Bar */}
-                <div className="relative z-10 flex items-center justify-between gap-2 text-xs font-mono">
-                  <span className="px-3 py-1 rounded-full bg-rose-950 border border-rose-500/50 text-rose-300 font-extrabold flex items-center gap-1.5">
-                    <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+                <div className="relative z-10 flex items-center justify-between gap-2 text-[10px] sm:text-xs font-mono">
+                  <span className="px-2.5 md:px-3 py-1 rounded-full bg-rose-950 border border-rose-500/50 text-rose-300 font-extrabold flex items-center gap-1.5 min-w-0">
+                    <AlertTriangle className="w-3.5 h-3.5 md:w-4 md:h-4 text-rose-400 shrink-0" />
                     <span className="truncate">SITE COMUM / TEMPLATE GENÉRICO</span>
                   </span>
-                  <span className="px-3 py-1 rounded-full bg-rose-600 text-white font-extrabold shrink-0">
-                    ❌ LENTO NO 4G (6.4s+)
+                  <span className="px-2.5 md:px-3 py-1 rounded-full bg-rose-600 text-white font-extrabold shrink-0">
+                    ❌ LENTO (6.4s+)
                   </span>
                 </div>
 
                 {/* Center Warning Details (Full 12-Col Grid matching Layer 1) */}
-                <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center my-auto">
-                  <div className="md:col-span-7 space-y-3">
-                    <div className="text-xs font-mono text-rose-400 font-bold uppercase tracking-wider">
+                <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-6 items-center my-auto">
+                  <div className="md:col-span-7 space-y-1.5 md:space-y-3">
+                    <div className="text-[10px] md:text-xs font-mono text-rose-400 font-bold uppercase tracking-wider truncate">
                       ❌ Excesso de Plugins · ❌ Sem Triagem · ❌ Visual Amador
                     </div>
-                    <h3 className="text-2xl sm:text-4xl font-extrabold font-heading text-slate-200 leading-tight">
+                    <h3 className="text-lg sm:text-2xl md:text-4xl font-extrabold font-heading text-slate-200 leading-tight">
                       {currentNiche.beforeTitle}
                     </h3>
-                    <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                    <p className="text-[11px] sm:text-sm text-slate-400 leading-snug md:leading-relaxed line-clamp-2 md:line-clamp-none">
                       {currentNiche.beforeSubtitle}
                     </p>
                   </div>
 
                   {/* Right Warning Box */}
-                  <div className="md:col-span-5 p-4 sm:p-5 rounded-2xl bg-[#160B10] border border-rose-500/40 space-y-2.5 shadow-2xl">
-                    <div className="flex items-center justify-between text-xs font-mono pb-2 border-b border-rose-500/20">
+                  <div className="md:col-span-5 p-3 sm:p-4 md:p-5 rounded-2xl bg-[#160B10] border border-rose-500/40 space-y-1.5 md:space-y-2.5 shadow-2xl">
+                    <div className="flex items-center justify-between text-[10px] md:text-xs font-mono pb-1.5 md:pb-2 border-b border-rose-500/20">
                       <span className="text-rose-400 font-bold">DIAGNÓSTICO DE FALHAS</span>
                       <span className="text-rose-300 font-extrabold">BAIXA CONVERSÃO</span>
                     </div>
                     {currentNiche.beforeProblems.map((prob) => (
-                      <div key={prob} className="flex items-start gap-2 text-xs text-rose-100/90">
-                        <XCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                      <div key={prob} className="flex items-start gap-2 text-[11px] md:text-xs text-rose-100/90 leading-snug">
+                        <XCircle className="w-3.5 h-3.5 md:w-4 md:h-4 text-rose-400 shrink-0 mt-0.5" />
                         <span>{prob}</span>
                       </div>
                     ))}
@@ -560,9 +406,9 @@ export default function BeforeAfterSlider() {
                 </div>
 
                 {/* Bottom Warning Bar */}
-                <div className="relative z-10 flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-rose-300 pt-3 border-t border-rose-500/20">
+                <div className="relative z-10 flex flex-wrap items-center justify-between gap-2 text-[10px] md:text-xs font-mono text-rose-300 pt-2 md:pt-3 border-t border-rose-500/20">
                   <span className="font-bold">❌ 84% dos clientes desistem antes de carregar</span>
-                  <span>Perda diária de orçamentos para o concorrente</span>
+                  <span className="hidden sm:inline">Perda diária de orçamentos para o concorrente</span>
                 </div>
               </div>
 
@@ -576,13 +422,13 @@ export default function BeforeAfterSlider() {
                 {/* Glowing Laser Line */}
                 <div className="absolute inset-y-0 w-[3px] bg-gradient-to-b from-cyan-300 via-emerald-400 to-cyan-300 shadow-[0_0_20px_4px_rgba(34,211,238,0.85)]" />
                 {/* Handle Orb */}
-                <div className="relative w-11 h-11 rounded-2xl bg-gradient-to-br from-cyan-400 to-emerald-400 text-slate-950 flex items-center justify-center shadow-[0_0_25px_rgba(34,211,238,0.9)] border-2 border-white">
-                  <ArrowLeftRight className="w-5 h-5 stroke-[2.5]" />
+                <div className="relative w-10 h-10 md:w-11 md:h-11 rounded-2xl bg-gradient-to-br from-cyan-400 to-emerald-400 text-slate-950 flex items-center justify-center shadow-[0_0_25px_rgba(34,211,238,0.9)] border-2 border-white">
+                  <ArrowLeftRight className="w-4 h-4 md:w-5 md:h-5 stroke-[2.5]" />
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-xs font-mono text-slate-400 pt-3 px-1">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] sm:text-xs font-mono text-slate-400 pt-3 px-1">
               <button
                 type="button"
                 onClick={() => {

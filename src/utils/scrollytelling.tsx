@@ -183,7 +183,19 @@ export function Scroll3DStage({
 }: Scroll3DStageProps) {
   const isDesktop = useIsDesktop();
   if (!isDesktop) {
-    return <div className={className}>{children}</div>;
+    return (
+      <div className={`scrolly-perspective ${className}`}>
+        <motion.div
+          initial={{ opacity: 0.25, y: 28, scale: 0.95, rotateX: 5 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1, rotateX: 0 }}
+          viewport={{ once: false, amount: 0.06 }}
+          transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+          className="h-full will-change-transform"
+        >
+          {children}
+        </motion.div>
+      </div>
+    );
   }
   return (
     <Scroll3DStageDesktop className={className} intensity={intensity}>
@@ -264,7 +276,15 @@ export function StickyStackCard(props: StickyStackCardProps) {
   if (!isDesktop) {
     return (
       <div className={`relative ${props.className || ''}`}>
-        <div className="scrolly-stack-shadow rounded-2xl">{props.children}</div>
+        <motion.div
+          initial={{ opacity: 0.35, y: 30, scale: 0.95 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+          viewport={{ once: false, amount: 0.06 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="scrolly-stack-shadow rounded-2xl will-change-transform"
+        >
+          {props.children}
+        </motion.div>
       </div>
     );
   }
@@ -308,6 +328,33 @@ function ScrollParallaxItemDesktop({
   );
 }
 
+function ScrollParallaxItemMobile({
+  children,
+  offsetY = 26,
+  className = '',
+}: ScrollParallaxItemProps) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ['start end', 'end start'],
+  });
+
+  const smooth = useSpring(scrollYProgress, {
+    stiffness: 130,
+    damping: 28,
+    mass: 0.3,
+  });
+
+  const y = useTransform(smooth, [0, 0.5, 1], [offsetY * 0.45, 0, -offsetY * 0.45]);
+  const scale = useTransform(smooth, [0, 0.18, 0.82, 1], [0.97, 1, 1, 0.98]);
+
+  return (
+    <motion.div ref={ref} style={{ y, scale, opacity: 1 }} className={`will-change-transform ${className}`}>
+      {children}
+    </motion.div>
+  );
+}
+
 export function ScrollParallaxItem({
   children,
   offsetY = 26,
@@ -315,7 +362,11 @@ export function ScrollParallaxItem({
 }: ScrollParallaxItemProps) {
   const isDesktop = useIsDesktop();
   if (!isDesktop) {
-    return <div className={className}>{children}</div>;
+    return (
+      <ScrollParallaxItemMobile offsetY={offsetY} className={className}>
+        {children}
+      </ScrollParallaxItemMobile>
+    );
   }
   return (
     <ScrollParallaxItemDesktop offsetY={offsetY} className={className}>

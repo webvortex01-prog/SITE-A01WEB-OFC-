@@ -49,7 +49,6 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
   });
 
   useMotionValueEvent(layersProgress, 'change', (v) => {
-    if (typeof window !== 'undefined' && window.innerWidth < 1024) return;
     const clamped = Math.min(0.999, Math.max(0, v));
     const nextIdx = Math.min(3, Math.max(0, Math.floor(clamped * 4)));
     setActiveLayer((prev) => (prev !== nextIdx ? nextIdx : prev));
@@ -72,7 +71,6 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
   const laserScaleY = useTransform(smoothTimelineProgress, [0, 0.85, 1], [0.12, 1, 1]);
 
   useMotionValueEvent(timelineProgress, 'change', (v) => {
-    if (typeof window !== 'undefined' && window.innerWidth < 1024) return;
     let nextStep = 0;
     if (v < 0.2) nextStep = 0;
     else if (v < 0.4) nextStep = 1;
@@ -83,7 +81,7 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
     setActiveStep((prev) => (prev !== nextStep ? nextStep : prev));
   });
 
-  // Helper to jump scroll to a specific step in a pinned track (Desktop) or inspector card (Mobile)
+  // Helper to jump scroll to a specific step in a pinned track (or inspector card on Mobile timeline)
   const jumpToTrackIndex = (
     trackRef: React.RefObject<HTMLDivElement | null>,
     index: number,
@@ -94,7 +92,7 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
     sound.playSelect();
     setter(index);
 
-    if (window.innerWidth < 1024) {
+    if (window.innerWidth < 1024 && trackRef === timelineTrackRef) {
       if (mobileTargetRef?.current) {
         const rect = mobileTargetRef.current.getBoundingClientRect();
         if (rect.top > window.innerHeight * 0.75 || rect.bottom < 120) {
@@ -283,28 +281,28 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
         {/* =====================================================================
             PART 1: PINNED SCROLL-STEPPED 4 LAYERS (SCROLL OR CLICK TO ADVANCE)
            ===================================================================== */}
-        <div ref={layersTrackRef} className="relative lg:min-h-[240vh] py-12 lg:py-0">
-          <div className="lg:sticky lg:top-15 lg:py-3 flex flex-col justify-center space-y-4">
+        <div ref={layersTrackRef} className="relative min-h-[260vh] lg:min-h-[240vh] py-4 lg:py-0">
+          <div className="sticky top-16 lg:top-15 py-2 lg:py-3 flex flex-col justify-center space-y-3 lg:space-y-4">
             {/* Section Header + Live Scroll Step Indicator */}
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-3">
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-2.5 lg:gap-3">
               <div className="space-y-1 max-w-2xl">
-                <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-cyan-400">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-mono text-cyan-400">
                   <Layers className="w-3.5 h-3.5" />
                   <span>02. ENGENHARIA INTERATIVA 01 WEB</span>
-                  <span aria-hidden="true" className="text-slate-600">·</span>
-                  <span className="text-emerald-400 font-bold">
+                  <span aria-hidden="true" className="hidden sm:inline text-slate-600">·</span>
+                  <span className="hidden sm:inline text-emerald-400 font-bold">
                     ROLE O MOUSE OU CLIQUE PARA AVANÇAR AS CAMADAS
                   </span>
                 </div>
 
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-heading text-white tracking-tight">
+                <h2 className="text-xl sm:text-3xl lg:text-4xl font-extrabold font-heading text-white tracking-tight leading-tight">
                   Anatomia de uma Estrutura Feita Para{' '}
                   <span className="text-gradient-animated">Converter Visitantes em Clientes.</span>
                 </h2>
               </div>
 
               {/* Scroll Progress Pill for Layers */}
-              <div className="relative z-20 lg:static flex items-center justify-between sm:justify-start gap-2 sm:gap-3 px-3.5 py-2.5 rounded-2xl bg-[#0B0F1A]/95 backdrop-blur-md border border-cyan-400/30 shrink-0 shadow-lg">
+              <div className="relative z-20 lg:static flex items-center justify-between sm:justify-start gap-2 sm:gap-3 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-2xl bg-[#0B0F1A]/95 backdrop-blur-md border border-cyan-400/30 shrink-0 shadow-lg">
                 <div className="flex items-center gap-2 text-xs font-mono">
                   <MousePointerClick className="w-4 h-4 text-cyan-400 shrink-0" />
                   <span className="text-slate-400 hidden sm:inline">Camada Ativa: </span>
@@ -341,8 +339,8 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
 
             {/* Main 2-Column Interactive + Scroll-Driven Stage */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
-              {/* Left: 4 Interactive Layer Cards */}
-              <div className="lg:col-span-6 space-y-3 scrolly-perspective">
+              {/* Left: 4 Interactive Layer Cards (Desktop — on mobile, top pills + scroll drive the holographic stage directly) */}
+              <div className="hidden lg:block lg:col-span-6 space-y-3 scrolly-perspective">
                 {blueprintLayers.map((layer, idx) => {
                   const Icon = layer.icon;
                   const isSelected = activeLayer === idx;
@@ -416,32 +414,32 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
                     animate={{ opacity: 1, y: 0, scale: 1, rotateX: 0 }}
                     exit={{ opacity: 0, y: -20, scale: 0.95, rotateX: -8 }}
                     transition={{ duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
-                    className={`rounded-3xl p-5 sm:p-6 bg-[#0B0F1A] border ${currentLayer.border} scrolly-glow-border space-y-3.5`}
+                    className={`rounded-3xl p-4 sm:p-6 bg-[#0B0F1A] border ${currentLayer.border} scrolly-glow-border space-y-2.5 sm:space-y-3.5`}
                   >
-                    <div className="flex items-center justify-between gap-3 pb-2.5 border-b border-white/10">
-                      <span className="px-3 py-1 rounded-full bg-cyan-400/15 border border-cyan-400/30 text-cyan-300 text-xs font-mono font-bold">
+                    <div className="flex items-center justify-between gap-2 sm:gap-3 pb-2 sm:pb-2.5 border-b border-white/10">
+                      <span className="px-2.5 sm:px-3 py-1 rounded-full bg-cyan-400/15 border border-cyan-400/30 text-cyan-300 text-[10px] sm:text-xs font-mono font-bold truncate">
                         {currentLayer.badge}
                       </span>
-                      <span className="text-xs font-mono text-emerald-400 font-bold">
+                      <span className="text-[11px] sm:text-xs font-mono text-emerald-400 font-bold shrink-0">
                         {currentLayer.code} DE 04
                       </span>
                     </div>
 
-                    <div className="space-y-1.5">
-                      <div className="flex items-center gap-3">
+                    <div className="space-y-1 sm:space-y-1.5">
+                      <div className="flex items-center gap-2.5 sm:gap-3">
                         <div
-                          className={`w-9 h-9 rounded-xl bg-gradient-to-br ${currentLayer.accent} text-slate-950 flex items-center justify-center shrink-0`}
+                          className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br ${currentLayer.accent} text-slate-950 flex items-center justify-center shrink-0`}
                         >
                           <CurrentLayerIcon className="w-4 h-4 stroke-[2.2]" />
                         </div>
-                        <h3 className="text-lg sm:text-xl font-extrabold font-heading text-white">
+                        <h3 className="text-base sm:text-xl font-extrabold font-heading text-white leading-tight">
                           {currentLayer.title}
                         </h3>
                       </div>
-                      <p className="text-xs text-cyan-300 font-medium">
+                      <p className="text-[11px] sm:text-xs text-cyan-300 font-medium">
                         {currentLayer.subtitle}
                       </p>
-                      <p className="text-xs text-slate-300 leading-relaxed">
+                      <p className="text-[11.5px] sm:text-xs text-slate-300 leading-snug sm:leading-relaxed line-clamp-3 sm:line-clamp-none">
                         {currentLayer.description}
                       </p>
                     </div>
@@ -453,7 +451,7 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
                       badgeText={currentLayer.code}
                       metricText={currentLayer.metricValue}
                       accentColor={currentLayer.accent}
-                      aspectClass="h-28 sm:h-32"
+                      aspectClass="h-24 sm:h-32"
                       overlayTitle={currentLayer.title}
                       overlaySubtitle={currentLayer.subtitle}
                     />
@@ -520,7 +518,7 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
            ===================================================================== */}
         <div
           ref={timelineTrackRef}
-          className="relative lg:min-h-[280vh] py-12 lg:py-0 border-t border-white/10"
+          className="relative lg:min-h-[280vh] py-10 lg:py-0 border-t border-white/10"
         >
           <div className="lg:sticky lg:top-15 lg:py-3 flex flex-col justify-center space-y-3.5">
             {/* Header + Active Vertical Step Readout */}
@@ -606,7 +604,7 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
                 {/* Vertical Background Track Line */}
                 <div className="absolute left-5 sm:left-6 top-6 bottom-6 w-[3px] bg-slate-800/90 rounded-full overflow-hidden">
                   <motion.div
-                    style={{ scaleY: isDesktop ? laserScaleY : 1 }}
+                    style={{ scaleY: laserScaleY }}
                     className={`w-full h-full origin-top transition-colors duration-300 ${
                       isAllCompleted
                         ? 'bg-emerald-400 shadow-[0_0_18px_#10b981]'
@@ -650,7 +648,11 @@ export default function InteractiveTechShowcase({ onOpenFunnel }: InteractiveTec
                                 ? 0.9
                                 : 0.38,
                             }
-                          : { x: 0, scale: 1, opacity: 1 }
+                          : {
+                              x: 0,
+                              scale: isCurrent ? 1.01 : 1,
+                              opacity: isAllCompleted || isCurrent || isCompleted ? 1 : 0.72,
+                            }
                       }
                       transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                       className={`relative p-3 sm:p-3.5 rounded-2xl border transition-all cursor-pointer ${
