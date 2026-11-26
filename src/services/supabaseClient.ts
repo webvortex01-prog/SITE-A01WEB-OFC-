@@ -10,7 +10,12 @@ let cachedSignature = '';
 
 function readEnvCredentials(): { url: string; anonKey: string } {
   const url = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.trim() || '';
-  const anonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined)?.trim() || '';
+  const anonKey = (
+    (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined) ||
+    (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) ||
+    (import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY as string | undefined) ||
+    ''
+  ).trim();
   return { url, anonKey };
 }
 
