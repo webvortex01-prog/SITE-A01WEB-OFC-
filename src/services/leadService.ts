@@ -11,6 +11,115 @@ import {
 import { generateAiSolutionBlueprint } from './aiLeadArchitect';
 import { liveRadarService } from './liveRadarService';
 import { pixelService } from './pixelService';
+import { getSupabaseClient } from './supabaseClient';
+
+function leadToDbRow(lead: Lead): Record<string, unknown> {
+  return {
+    id: lead.id,
+    created_at: lead.createdAt,
+    name: lead.name,
+    business_name: lead.businessName || '',
+    whatsapp: lead.whatsapp,
+    segment: lead.segment || '',
+    bottleneck: lead.bottleneck || 'custom_need',
+    bottleneck_label: lead.bottleneckLabel || '',
+    problem_details: lead.problemDetails || null,
+    need: lead.need || 'combo_completo',
+    need_label: lead.needLabel || '',
+    urgency: lead.urgency || 'imediato',
+    urgency_label: lead.urgencyLabel || '',
+    budget_estimate: lead.budgetEstimate ?? 1850,
+    investment_range: lead.investmentRange || null,
+    investment_tier: lead.investmentTier || null,
+    utm_summary: lead.utmSummary || null,
+    is_puro_suco: Boolean(lead.isPuroSuco),
+    status: lead.status || 'NOVO',
+    temperature: lead.temperature || 'WARM',
+    score: lead.score ?? 50,
+    source: lead.source || 'funil_anuncio',
+    diagnostic_summary: lead.diagnosticSummary || '',
+    notes: lead.notes || null,
+    ai_blueprint: lead.aiBlueprint || null,
+    checklist: lead.checklist || DEFAULT_CHECKLIST,
+    paid_deposit: Boolean(lead.paidDeposit),
+    paid_final: Boolean(lead.paidFinal),
+    last_contacted_at: lead.lastContactedAt || null,
+  };
+}
+
+function dbRowToLead(row: Record<string, any>): Lead {
+  const baseLead: Lead = {
+    id: String(row.id),
+    createdAt: row.created_at || new Date().toISOString(),
+    name: row.name || 'Visitante',
+    businessName: row.business_name || '',
+    whatsapp: row.whatsapp || '',
+    segment: row.segment || 'Outro Segmento',
+    bottleneck: row.bottleneck || 'custom_need',
+    bottleneckLabel: row.bottleneck_label || '',
+    problemDetails: row.problem_details || undefined,
+    need: row.need || 'combo_completo',
+    needLabel: row.need_label || '',
+    urgency: row.urgency || 'imediato',
+    urgencyLabel: row.urgency_label || '',
+    budgetEstimate: typeof row.budget_estimate === 'number' ? row.budget_estimate : Number(row.budget_estimate) || 1850,
+    investmentRange: row.investment_range || undefined,
+    investmentTier: row.investment_tier || undefined,
+    utmSummary: row.utm_summary || undefined,
+    isPuroSuco: Boolean(row.is_puro_suco),
+    status: row.status || 'NOVO',
+    temperature: row.temperature || 'WARM',
+    score: typeof row.score === 'number' ? row.score : 50,
+    source: row.source || 'funil_anuncio',
+    diagnosticSummary: row.diagnostic_summary || '',
+    notes: row.notes || undefined,
+    aiBlueprint: row.ai_blueprint || undefined,
+    checklist: row.checklist || { ...DEFAULT_CHECKLIST },
+    paidDeposit: Boolean(row.paid_deposit),
+    paidFinal: Boolean(row.paid_final),
+    lastContactedAt: row.last_contacted_at || undefined,
+  };
+
+  if (!baseLead.aiBlueprint) {
+    baseLead.aiBlueprint = generateAiSolutionBlueprint(baseLead);
+  }
+  return baseLead;
+}
+
+function pushLeadToCloud(lead: Lead): void {
+  const supabase = getSupabaseClient();
+  if (!supabase) return;
+  void supabase
+    .from('leads')
+    .upsert(leadToDbRow(lead), { onConflict: 'id' })
+    .then(({ error }) => {
+      if (error) console.warn('[Supabase] Erro ao salvar lead:', error.message);
+    });
+}
+
+function patchLeadInCloud(id: string, patch: Record<string, unknown>): void {
+  const supabase = getSupabaseClient();
+  if (!supabase) return;
+  void supabase
+    .from('leads')
+    .update(patch)
+    .eq('id', id)
+    .then(({ error }) => {
+      if (error) console.warn('[Supabase] Erro ao atualizar lead:', error.message);
+    });
+}
+
+function deleteLeadFromCloud(id: string): void {
+  const supabase = getSupabaseClient();
+  if (!supabase) return;
+  void supabase
+    .from('leads')
+    .delete()
+    .eq('id', id)
+    .then(({ error }) => {
+      if (error) console.warn('[Supabase] Erro ao remover lead:', error.message);
+    });
+}
 
 const STORAGE_KEY = '01web_leads_v3';
 const SETTINGS_KEY = '01web_agency_settings_v3';
@@ -448,6 +557,7 @@ export const leadService = {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
       window.dispatchEvent(new CustomEvent(EVENT_NAME, { detail: newLead }));
       liveRadarService.identifyVisitor(newLead.name, newLead.whatsapp, pixelResult.eventsFired);
+      pushLeadToCloud(newLead);
     } catch (e) {
       console.error('Failed to save lead in localStorage', e);
     }
@@ -518,16 +628,24 @@ export const leadService = {
     });
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     window.dispatchEvent(new CustomEvent(EVENT_NAME));
+    if (updatedLead) {
+      patchLeadInCloud(id, {
+        ai_blueprint: (updatedLead as Lead).aiBlueprint,
+        budget_estimate: (updatedLead as Lead).budgetEstimate,
+      });
+    }
     return updatedLead;
   },
 
   updateLeadStatus(id: string, status: LeadStatus): void {
     const leads = this.getLeads();
+    const contactedAt = new Date().toISOString();
     const updated = leads.map((l) =>
-      l.id === id ? { ...l, status, lastContactedAt: new Date().toISOString() } : l
+      l.id === id ? { ...l, status, lastContactedAt: contactedAt } : l
     );
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     window.dispatchEvent(new CustomEvent(EVENT_NAME));
+    patchLeadInCloud(id, { status, last_contacted_at: contactedAt });
   },
 
   updateLeadTemperature(id: string, temperature: LeadTemperature): void {
@@ -538,6 +656,7 @@ export const leadService = {
     );
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     window.dispatchEvent(new CustomEvent(EVENT_NAME));
+    patchLeadInCloud(id, { temperature, score: newScore });
   },
 
   updateLeadPayment(id: string, field: 'paidDeposit' | 'paidFinal', val: boolean): void {
@@ -545,6 +664,9 @@ export const leadService = {
     const updated = leads.map((l) => (l.id === id ? { ...l, [field]: val } : l));
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     window.dispatchEvent(new CustomEvent(EVENT_NAME));
+    patchLeadInCloud(id, {
+      [field === 'paidDeposit' ? 'paid_deposit' : 'paid_final']: val,
+    });
   },
 
   updateLeadNotes(id: string, notes: string): void {
@@ -552,6 +674,7 @@ export const leadService = {
     const updated = leads.map((l) => (l.id === id ? { ...l, notes } : l));
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     window.dispatchEvent(new CustomEvent(EVENT_NAME));
+    patchLeadInCloud(id, { notes });
   },
 
   updateLeadBudget(id: string, budgetEstimate: number): void {
@@ -559,23 +682,29 @@ export const leadService = {
     const updated = leads.map((l) => (l.id === id ? { ...l, budgetEstimate } : l));
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     window.dispatchEvent(new CustomEvent(EVENT_NAME));
+    patchLeadInCloud(id, { budget_estimate: budgetEstimate });
   },
 
   updateLeadChecklist(id: string, key: keyof ProjectChecklist, val: boolean): void {
     const leads = this.getLeads();
+    let nextChecklist: ProjectChecklist | undefined;
     const updated = leads.map((l) => {
       if (l.id !== id) return l;
       const current = l.checklist || { ...DEFAULT_CHECKLIST };
+      nextChecklist = {
+        ...current,
+        [key]: val,
+      };
       return {
         ...l,
-        checklist: {
-          ...current,
-          [key]: val,
-        },
+        checklist: nextChecklist,
       };
     });
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     window.dispatchEvent(new CustomEvent(EVENT_NAME));
+    if (nextChecklist) {
+      patchLeadInCloud(id, { checklist: nextChecklist });
+    }
   },
 
   deleteLead(id: string): void {
@@ -583,6 +712,7 @@ export const leadService = {
     const updated = leads.filter((l) => l.id !== id);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     window.dispatchEvent(new CustomEvent(EVENT_NAME));
+    deleteLeadFromCloud(id);
   },
 
   // ================= CEO IDEAS & BRAINSTORM =================
@@ -726,6 +856,65 @@ export const leadService = {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(next));
     window.dispatchEvent(new CustomEvent(EVENT_NAME));
     return next;
+  },
+
+  async syncFromCloud(): Promise<Lead[]> {
+    const supabase = getSupabaseClient();
+    if (!supabase) return this.getLeads();
+
+    try {
+      const { data, error } = await supabase
+        .from('leads')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(200);
+
+      if (error || !Array.isArray(data)) {
+        return this.getLeads();
+      }
+
+      if (data.length > 0) {
+        const cloudLeads = data.map((row) => dbRowToLead(row));
+        const localOnlyNonSeed = this.getLeads().filter(
+          (localItem) =>
+            !SEED_LEADS.some((seed) => seed.id === localItem.id) &&
+            !cloudLeads.some((cloudItem) => cloudItem.id === localItem.id)
+        );
+        const merged = [...cloudLeads, ...localOnlyNonSeed];
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+        window.dispatchEvent(new CustomEvent(EVENT_NAME));
+        return merged;
+      }
+
+      return this.getLeads();
+    } catch {
+      return this.getLeads();
+    }
+  },
+
+  startCloudRealtimeSync(): () => void {
+    const supabase = getSupabaseClient();
+    if (!supabase) return () => {};
+
+    const channel = supabase
+      .channel('01web-leads-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'leads' },
+        () => {
+          void this.syncFromCloud();
+        }
+      )
+      .subscribe();
+
+    const intervalId = window.setInterval(() => {
+      void this.syncFromCloud();
+    }, 20000);
+
+    return () => {
+      window.clearInterval(intervalId);
+      void supabase.removeChannel(channel);
+    };
   },
 
   subscribe(callback: () => void): () => void {

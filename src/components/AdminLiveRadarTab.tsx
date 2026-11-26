@@ -11,8 +11,10 @@ import {
   MousePointerClick,
   ArrowUpRight,
   Compass,
+  Database,
 } from 'lucide-react';
 import { liveRadarService, LiveVisitorSession } from '../services/liveRadarService';
+import { isCloudDatabaseConfigured } from '../services/supabaseClient';
 import { sound } from '../utils/audio';
 
 export default function AdminLiveRadarTab() {
@@ -33,9 +35,12 @@ export default function AdminLiveRadarTab() {
     refresh();
     const unsub = liveRadarService.subscribe(refresh);
     const interval = window.setInterval(refresh, 2500);
+    void liveRadarService.syncRadarFromCloud();
+    const stopRadarCloud = liveRadarService.startRadarCloudSubscription();
     return () => {
       unsub();
       window.clearInterval(interval);
+      stopRadarCloud();
     };
   }, [includeSimulated, selectedSessionId]);
 
@@ -72,6 +77,18 @@ export default function AdminLiveRadarTab() {
               </span>
               <span className="text-xs font-mono text-cyan-300 font-bold">
                 + META PIXEL 1021802663562956 INTEGRADO
+              </span>
+              <span
+                className={`text-[10px] font-mono font-extrabold px-2.5 py-0.5 rounded-full border inline-flex items-center gap-1 ${
+                  isCloudDatabaseConfigured()
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40'
+                    : 'bg-amber-500/15 text-amber-300 border-amber-400/35'
+                }`}
+              >
+                <Database className="w-3 h-3" />
+                {isCloudDatabaseConfigured()
+                  ? '☁️ MULTI-DISPOSITIVO NA NUVEM'
+                  : '💾 MODO LOCAL (CONECTE SUPABASE)'}
               </span>
             </div>
             <h2 className="text-lg sm:text-xl font-extrabold text-white font-heading mt-1">

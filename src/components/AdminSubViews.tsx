@@ -11,9 +11,17 @@ import {
   Sparkles,
   CheckCircle2,
   RefreshCw,
+  Database,
 } from 'lucide-react';
 import { Lead, LeadStatus, AgencySettings, ProjectChecklist } from '../types/lead';
 import { leadService } from '../services/leadService';
+import {
+  getCloudDatabaseSource,
+  getStoredLocalSupabaseConfig,
+  saveLocalSupabaseConfig,
+  clearLocalSupabaseConfig,
+  testCloudConnection,
+} from '../services/supabaseClient';
 import { generateAiSolutionBlueprint } from '../services/aiLeadArchitect';
 import { getSalesScripts, buildDirectWaUrl } from '../utils/adminScripts';
 import { sound } from '../utils/audio';
@@ -272,6 +280,60 @@ export function AdminSettingsTab({ settings }: { settings: AgencySettings }) {
   const [waNumberInput, setWaNumberInput] = useState(settings.whatsappNumber);
   const [savedToast, setSavedToast] = useState(false);
 
+  const storedSupa = getStoredLocalSupabaseConfig();
+  const [supaUrlInput, setSupaUrlInput] = useState(storedSupa.url);
+  const [supaKeyInput, setSupaKeyInput] = useState(storedSupa.anonKey);
+  const [cloudSource, setCloudSource] = useState(() => getCloudDatabaseSource());
+  const [cloudTestResult, setCloudTestResult] = useState<{ ok: boolean; message: string } | null>(
+    null
+  );
+  const [isTestingCloud, setIsTestingCloud] = useState(false);
+
+  const handleSaveAndTestCloud = async (e: React.FormEvent) => {
+    e.preventDefault();
+    sound.playSelect();
+    if (supaUrlInput.trim() && supaKeyInput.trim()) {
+      saveLocalSupabaseConfig(supaUrlInput, supaKeyInput);
+    }
+    setIsTestingCloud(true);
+    const res = await testCloudConnection();
+    setCloudTestResult(res);
+    setCloudSource(getCloudDatabaseSource());
+    if (res.ok) {
+      sound.playSuccess();
+      await leadService.syncFromCloud();
+    }
+    setIsTestingCloud(false);
+  };
+
+  const handleManualSyncNow = async () => {
+    sound.playSelect();
+    setIsTestingCloud(true);
+    const res = await testCloudConnection();
+    setCloudTestResult(res);
+    if (res.ok) {
+      const synced = await leadService.syncFromCloud();
+      sound.playSuccess();
+      setCloudTestResult({
+        ok: true,
+        message: `Sincronização concluída! ${synced.length} leads carregados no painel.`,
+      });
+    }
+    setIsTestingCloud(false);
+  };
+
+  const handleClearLocalCloud = () => {
+    sound.playSelect();
+    clearLocalSupabaseConfig();
+    setSupaUrlInput('');
+    setSupaKeyInput('');
+    setCloudSource(getCloudDatabaseSource());
+    setCloudTestResult({
+      ok: false,
+      message: 'Chaves locais removidas. Usando variáveis da Vercel ou modo local.',
+    });
+  };
+
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     sound.playSuccess();
@@ -422,6 +484,131 @@ export function AdminSettingsTab({ settings }: { settings: AgencySettings }) {
           </button>
         </div>
       </div>
+
+      {/* CLOUD DATABASE (SUPABASE POSTGRESQL) CONFIGURATION CARD */}
+      <form
+        onSubmit={handleSaveAndTestCloud}
+        className="lg:col-span-2 p-6 rounded-2xl bg-gradient-to-br from-[#071222] via-[#080C18] to-[#071619] border border-cyan-400/35 space-y-5"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/10">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-cyan-400/15 border border-cyan-400/35 flex items-center justify-center text-cyan-400 shrink-0">
+              <Database className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-[10px] font-mono uppercase text-cyan-400 font-bold">
+                BANCO DE DADOS NA NUVEM · 100% GRÁTIS
+              </span>
+              <h3 className="text-base sm:text-lg font-bold text-white mt-0.5">
+                Conexão Supabase PostgreSQL (Leads & Radar Ao Vivo Multi-Dispositivo)
+              </h3>
+              <p className="text-xs text-slate-300 mt-0.5">
+                Quando conectado, qualquer empresário que preencher o site pelo celular cai direto na
+                nuvem em tempo real para você acompanhar de qualquer dispositivo.
+              </p>
+            </div>
+          </div>
+
+          <span
+            className={`px-3 py-1.5 rounded-xl text-[11px] font-mono font-extrabold border shrink-0 self-start sm:self-center ${
+              cloudSource === 'env'
+                ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300'
+                : cloudSource === 'local_override'
+                ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-300'
+                : 'bg-amber-500/15 border-amber-400/40 text-amber-300'
+            }`}
+          >
+            {cloudSource === 'env'
+              ? '☁️ ONLINE VIA VERCEL'
+              : cloudSource === 'local_override'
+              ? '🧪 ONLINE (TESTE LOCAL)'
+              : '💾 OFFLINE · MODO LOCAL'}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-mono text-slate-300 uppercase mb-1.5">
+              Supabase Project URL (VITE_SUPABASE_URL)
+            </label>
+            <input
+              type="url"
+              placeholder="https://seuprojeto.supabase.co"
+              value={supaUrlInput}
+              onChange={(e) => setSupaUrlInput(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-cyan-400"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-mono text-slate-300 uppercase mb-1.5">
+              Supabase Anon Public Key (VITE_SUPABASE_ANON_KEY)
+            </label>
+            <input
+              type="password"
+              placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+              value={supaKeyInput}
+              onChange={(e) => setSupaKeyInput(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-cyan-400"
+            />
+          </div>
+        </div>
+
+        {cloudTestResult && (
+          <div
+            className={`p-3.5 rounded-xl border text-xs font-mono ${
+              cloudTestResult.ok
+                ? 'bg-emerald-950/40 border-emerald-400/40 text-emerald-300'
+                : 'bg-rose-950/40 border-rose-500/40 text-rose-300'
+            }`}
+          >
+            {cloudTestResult.ok ? '✅ ' : '⚠️ '}
+            {cloudTestResult.message}
+          </div>
+        )}
+
+        <div className="p-3.5 rounded-xl bg-[#050811] border border-white/10 text-[11px] text-slate-300 leading-relaxed">
+          <strong className="text-amber-300">Importante para produção:</strong> As chaves salvas
+          aqui funcionam neste navegador para teste imediato. Para que os visitantes de{' '}
+          <strong className="text-white">outros celulares</strong> também gravem no seu banco,
+          adicione <code className="text-cyan-300">VITE_SUPABASE_URL</code> e{' '}
+          <code className="text-cyan-300">VITE_SUPABASE_ANON_KEY</code> nas{' '}
+          <strong className="text-white">Environment Variables da Vercel</strong> e dê Redeploy.
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              type="submit"
+              disabled={isTestingCloud}
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 font-extrabold text-xs cursor-pointer disabled:opacity-60"
+            >
+              <Database className="w-4 h-4" />
+              <span>{isTestingCloud ? 'Testando...' : 'Salvar & Testar Conexão'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleManualSyncNow}
+              disabled={isTestingCloud}
+              className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-cyan-400/35 text-cyan-300 font-bold text-xs cursor-pointer disabled:opacity-60"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isTestingCloud ? 'animate-spin' : ''}`} />
+              <span>Sincronizar Leads Agora</span>
+            </button>
+          </div>
+
+          {cloudSource === 'local_override' && (
+            <button
+              type="button"
+              onClick={handleClearLocalCloud}
+              className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white text-xs font-mono cursor-pointer"
+            >
+              Limpar Chaves Locais
+            </button>
+          )}
+        </div>
+      </form>
     </div>
   );
 }

@@ -4,6 +4,76 @@
 // profundidade de scroll, cliques em projetos/nichos e eventos do Meta Pixel.
 // ============================================================================
 import { pixelService } from './pixelService';
+import { getSupabaseClient } from './supabaseClient';
+
+let cloudSessionsCache: LiveVisitorSession[] = [];
+let lastCloudRadarPush = 0;
+
+function sessionToDbRow(session: LiveVisitorSession): Record<string, unknown> {
+  return {
+    session_id: session.sessionId,
+    started_at: session.startedAt,
+    last_active_at: session.lastActiveAt,
+    seconds_on_site: session.secondsOnSite,
+    device: session.device,
+    source: session.source,
+    city: session.city,
+    current_section_id: session.currentSectionId,
+    current_section_label: session.currentSectionLabel,
+    scroll_depth_pct: session.scrollDepthPct,
+    intent_level: session.intentLevel,
+    last_interest: session.lastInterest,
+    interest_history: session.interestHistory || [],
+    identified_name: session.identifiedName || null,
+    identified_whatsapp: session.identifiedWhatsapp || null,
+    pixel_events_fired: session.pixelEventsFired || ['PageView'],
+    radar_angle: session.radarAngle,
+    radar_distance: session.radarDistance,
+  };
+}
+
+function dbRowToSession(row: Record<string, any>): LiveVisitorSession {
+  return {
+    sessionId: String(row.session_id),
+    startedAt: row.started_at || new Date().toISOString(),
+    lastActiveAt: row.last_active_at || new Date().toISOString(),
+    secondsOnSite: typeof row.seconds_on_site === 'number' ? row.seconds_on_site : 1,
+    device: row.device || 'Dispositivo Desconhecido',
+    source: row.source || '🌐 Acesso Direto',
+    city: row.city || 'Visitante Online',
+    currentSectionId: row.current_section_id || 'inicio',
+    current_section_label: row.current_section_label || SECTION_LABELS.inicio,
+    scrollDepthPct: typeof row.scroll_depth_pct === 'number' ? row.scroll_depth_pct : 5,
+    intentLevel: row.intent_level || 'EXPLORANDO',
+    lastInterest: row.last_interest || '',
+    interestHistory: Array.isArray(row.interest_history) ? row.interest_history : [],
+    identifiedName: row.identified_name || undefined,
+    identifiedWhatsapp: row.identified_whatsapp || undefined,
+    pixelEventsFired: Array.isArray(row.pixel_events_fired)
+      ? row.pixel_events_fired
+      : ['PageView'],
+    radarAngle: typeof row.radar_angle === 'number' ? row.radar_angle : 110,
+    radarDistance: typeof row.radar_distance === 'number' ? row.radar_distance : 55,
+  };
+}
+
+function pushSessionToCloud(session: LiveVisitorSession, forceImmediate = false): void {
+  const supabase = getSupabaseClient();
+  if (!supabase) return;
+
+  const now = Date.now();
+  if (!forceImmediate && now - lastCloudRadarPush < 3500) {
+    return;
+  }
+  lastCloudRadarPush = now;
+
+  void supabase
+    .from('live_radar_sessions')
+    .upsert(sessionToDbRow(session), { onConflict: 'session_id' })
+    .then(({ error }) => {
+      if (error) console.warn('[Supabase Radar] Erro ao enviar sessão:', error.message);
+    });
+}
 
 export interface LiveVisitorSession {
   sessionId: string;
@@ -178,13 +248,27 @@ export const liveRadarService = {
   getAllSessions(includeSimulated = true): LiveVisitorSession[] {
     const real = this.getRealSessions();
     const mySid = typeof window !== 'undefined' ? sessionStorage.getItem('01web_my_radar_sid') : null;
-    const markedReal = real.map((s) => ({
-      ...s,
-      isCurrentDevice: s.sessionId === mySid,
-    }));
 
-    if (!includeSimulated) return markedReal;
-    return [...markedReal, ...SIMULATED_ACTIVE_VISITORS];
+    const mergedById = new Map<string, LiveVisitorSession>();
+    for (const s of [...cloudSessionsCache, ...real]) {
+      const prev = mergedById.get(s.sessionId);
+      if (
+        !prev ||
+        new Date(s.lastActiveAt).getTime() >= new Date(prev.lastActiveAt).getTime()
+      ) {
+        mergedById.set(s.sessionId, {
+          ...s,
+          isCurrentDevice: s.sessionId === mySid,
+        });
+      }
+    }
+
+    const combinedReal = Array.from(mergedById.values()).sort(
+      (a, b) => new Date(b.lastActiveAt).getTime() - new Date(a.lastActiveAt).getTime()
+    );
+
+    if (!includeSimulated) return combinedReal;
+    return [...combinedReal, ...SIMULATED_ACTIVE_VISITORS];
   },
 
   upsertMySession(partial: Partial<LiveVisitorSession>): void {
@@ -242,6 +326,11 @@ export const liveRadarService = {
     } catch {
       // ignore
     }
+
+    const shouldPushNow = Boolean(
+      partial.currentSectionId || partial.identifiedWhatsapp || partial.lastInterest
+    );
+    pushSessionToCloud(updatedSession, shouldPushNow);
   },
 
   recordInteraction(actionText: string, pixelEvent?: string): void {
@@ -274,6 +363,54 @@ export const liveRadarService = {
       lastInterest: `Identificado: ${name || 'Cliente'} (${whatsapp || ''})`,
       pixelEventsFired: pixelEvents && pixelEvents.length > 0 ? pixelEvents : ['Contact'],
     });
+  },
+
+  async syncRadarFromCloud(): Promise<LiveVisitorSession[]> {
+    const supabase = getSupabaseClient();
+    if (!supabase) return this.getAllSessions();
+
+    try {
+      const cutoffIso = new Date(Date.now() - 1000 * 60 * 20).toISOString();
+      const { data, error } = await supabase
+        .from('live_radar_sessions')
+        .select('*')
+        .gte('last_active_at', cutoffIso)
+        .order('last_active_at', { ascending: false })
+        .limit(30);
+
+      if (!error && Array.isArray(data)) {
+        cloudSessionsCache = data.map((row) => dbRowToSession(row));
+        window.dispatchEvent(new CustomEvent(RADAR_EVENT_NAME));
+      }
+    } catch {
+      // ignore
+    }
+    return this.getAllSessions();
+  },
+
+  startRadarCloudSubscription(): () => void {
+    const supabase = getSupabaseClient();
+    if (!supabase) return () => {};
+
+    const channel = supabase
+      .channel('01web-radar-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'live_radar_sessions' },
+        () => {
+          void this.syncRadarFromCloud();
+        }
+      )
+      .subscribe();
+
+    const intervalId = window.setInterval(() => {
+      void this.syncRadarFromCloud();
+    }, 6000);
+
+    return () => {
+      window.clearInterval(intervalId);
+      void supabase.removeChannel(channel);
+    };
   },
 
   subscribe(callback: () => void): () => void {

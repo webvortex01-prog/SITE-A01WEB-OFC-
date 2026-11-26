@@ -22,6 +22,7 @@ import {
   Thermometer,
   Code2,
   Radio,
+  Database,
 } from 'lucide-react';
 import {
   Lead,
@@ -34,6 +35,7 @@ import {
   AgencyTemplate,
 } from '../types/lead';
 import { leadService } from '../services/leadService';
+import { getCloudDatabaseSource, isCloudDatabaseConfigured } from '../services/supabaseClient';
 import { buildDirectWaUrl } from '../utils/adminScripts';
 import {
   AdminScriptsTab,
@@ -79,6 +81,7 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
   const [tasks, setTasks] = useState<CeoTask[]>([]);
   const [templates, setTemplates] = useState<AgencyTemplate[]>([]);
   const [settings, setSettings] = useState<AgencySettings>(() => leadService.getSettings());
+  const [cloudSource, setCloudSource] = useState(() => getCloudDatabaseSource());
 
   const [inspectedLead, setInspectedLead] = useState<Lead | null>(null);
   const [scriptLeadId, setScriptLeadId] = useState<string>('');
@@ -102,6 +105,7 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
       setTasks(leadService.getTasks());
       setTemplates(leadService.getTemplates());
       setSettings(leadService.getSettings());
+      setCloudSource(getCloudDatabaseSource());
       if (currentLeads.length > 0 && !scriptLeadId) {
         setScriptLeadId(currentLeads[0].id);
       }
@@ -112,8 +116,18 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
     };
     refresh();
     const unsubscribe = leadService.subscribe(refresh);
-    return () => unsubscribe();
-  }, [scriptLeadId, inspectedLead?.id]);
+
+    let stopCloud = () => {};
+    if (isOpen && isAuthenticated) {
+      void leadService.syncFromCloud();
+      stopCloud = leadService.startCloudRealtimeSync();
+    }
+
+    return () => {
+      unsubscribe();
+      stopCloud();
+    };
+  }, [scriptLeadId, inspectedLead?.id, isOpen, isAuthenticated]);
 
   if (!isOpen) return null;
 
@@ -495,6 +509,27 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
           </h1>
 
           <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => {
+                sound.playSelect();
+                setActiveTab('settings');
+              }}
+              className={`hidden md:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border text-[11px] font-mono font-bold transition-all cursor-pointer ${
+                cloudSource !== 'offline' && isCloudDatabaseConfigured()
+                  ? 'bg-emerald-500/15 border-emerald-400/40 text-emerald-300 hover:bg-emerald-500/25'
+                  : 'bg-amber-500/15 border-amber-400/40 text-amber-300 hover:bg-amber-500/25'
+              }`}
+              title="Status do Banco de Dados na Nuvem (Supabase)"
+            >
+              <Database className="w-3.5 h-3.5 shrink-0" />
+              <span>
+                {cloudSource !== 'offline'
+                  ? '☁️ Nuvem Supabase Ativa'
+                  : '💾 Banco Local · Conectar Nuvem'}
+              </span>
+            </button>
+
             <button
               type="button"
               onClick={() => setIsAddingLead(true)}
